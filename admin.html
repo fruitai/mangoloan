@@ -481,18 +481,28 @@
 
     .payment-history-row {
       display: grid;
-      grid-template-columns: minmax(120px, 0.8fr) minmax(110px, 0.7fr) minmax(80px, 0.6fr) minmax(0, 1.4fr);
-      gap: 10px;
-      align-items: center;
+      gap: 8px;
       padding: 10px 12px;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: white;
     }
 
+    .payment-history-main {
+      display: grid;
+      grid-template-columns: minmax(112px, 1fr) minmax(96px, 0.8fr) minmax(72px, 0.6fr);
+      gap: 10px;
+      align-items: center;
+    }
+
     .payment-history-amount {
       color: var(--ok);
       font-weight: 800;
+    }
+
+    .payment-history-notes {
+      line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .zelle-preview {
@@ -598,8 +608,12 @@
       }
 
       .payment-history-row {
-        grid-template-columns: 1fr;
-        gap: 4px;
+        gap: 6px;
+      }
+
+      .payment-history-main {
+        grid-template-columns: minmax(104px, 1fr) minmax(88px, 0.8fr) minmax(64px, 0.6fr);
+        gap: 8px;
       }
     }
 
@@ -1966,10 +1980,12 @@
             ? `<div class="payment-history-list">
                 ${rows.map((payment) => `
                   <div class="payment-history-row">
-                    <div><strong>${escapeHtml(payment.date || "-")}</strong></div>
-                    <div class="payment-history-amount">${currency(payment.amount)}</div>
-                    <div>${escapeHtml(payment.method || "-")}</div>
-                    <div class="small muted">${escapeHtml(payment.notes || "")}</div>
+                    <div class="payment-history-main">
+                      <div><strong>${escapeHtml(payment.date || "-")}</strong></div>
+                      <div class="payment-history-amount">${currency(payment.amount)}</div>
+                      <div>${escapeHtml(payment.method || "-")}</div>
+                    </div>
+                    ${payment.notes ? `<div class="payment-history-notes small muted">${escapeHtml(payment.notes)}</div>` : ""}
                   </div>
                 `).join("")}
               </div>`
