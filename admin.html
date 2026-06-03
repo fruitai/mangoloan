@@ -474,6 +474,24 @@
       font-size: 20px;
     }
 
+    .icon-action {
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0;
+      border-radius: 999px;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .icon-action.close {
+      color: var(--danger);
+      background: var(--danger-bg);
+      border-color: #fecaca;
+    }
+
     .payment-history-list {
       display: grid;
       gap: 8px;
@@ -1971,8 +1989,8 @@
             <div class="muted small">${rows.length} ${rows.length === 1 ? "payment" : "payments"} · ${currency(totalPaid)} total paid</div>
           </div>
           <div class="row-actions">
-            <button type="button" onclick="addPaymentForBorrower('${borrower.id}')">Add Payment</button>
-            <button type="button" onclick="closeBorrowerPaymentDetail()">Close</button>
+            <button type="button" class="icon-action primary" aria-label="Add payment" title="Add payment" onclick="addPaymentForBorrower('${borrower.id}')">+</button>
+            <button type="button" class="icon-action close" aria-label="Close payment history" title="Close payment history" onclick="closeBorrowerPaymentDetail()">x</button>
           </div>
         </div>
         ${
