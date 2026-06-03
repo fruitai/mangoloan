@@ -170,6 +170,35 @@
       width: 100%;
     }
 
+    .receipt-mode {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      margin-bottom: 12px;
+    }
+
+    .receipt-mode button {
+      min-height: 36px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .receipt-mode button.active {
+      background: var(--soft);
+      color: var(--accent-dark);
+    }
+
+    .receipt-mode button:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
     button:hover, .file-label:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
@@ -822,10 +851,14 @@
     <div id="messageBox" class="message hidden"></div>
 
     <div id="receiptCard" class="card hidden" style="margin-bottom:16px;">
-      <h3>Payment Receipt Email</h3>
-      <div class="field"><label>To</label><input id="receiptTo" placeholder="borrower@email.com" /></div>
-      <div class="field"><label>Subject</label><input id="receiptSubject" /></div>
-      <div class="field"><label>Email Body</label><textarea id="receiptBody" style="min-height:220px;"></textarea></div>
+      <h3 id="receiptTitle">Payment Receipt</h3>
+      <div class="receipt-mode" role="group" aria-label="Receipt type">
+        <button id="receiptEmailModeBtn" type="button" class="active">Email</button>
+        <button id="receiptTextModeBtn" type="button">Text</button>
+      </div>
+      <div class="field"><label id="receiptToLabel">To</label><input id="receiptTo" placeholder="borrower@email.com" /></div>
+      <div id="receiptSubjectWrap" class="field"><label>Subject</label><input id="receiptSubject" /></div>
+      <div class="field"><label id="receiptBodyLabel">Email Body</label><textarea id="receiptBody" style="min-height:220px;"></textarea></div>
       <div class="actions">
         <button id="copyReceiptBtn">Copy Email</button>
         <button id="openReceiptBtn" class="primary">Open Email Draft</button>
@@ -1656,7 +1689,9 @@
       borrowers: [],
       loans: [],
       payments: [],
-      selectedBorrowerDetailId: null
+      selectedBorrowerDetailId: null,
+      currentReceipt: null,
+      receiptMode: "email"
     };
 
     function todayStr() {
@@ -2421,7 +2456,8 @@
       const borrower = state.borrowers.find((b) => b.id === loan.borrower_id);
       const loanStats = getLoanStats(loan);
       const outstanding = Math.max(0, Number(loanStats.balance || 0));
-      const to = borrower?.email || (borrower?.zelle && borrower.zelle.includes("@") ? borrower.zelle : "");
+      const emailTo = borrower?.email || (borrower?.zelle && borrower.zelle.includes("@") ? borrower.zelle : "");
+      const textTo = borrower?.phone || "";
       const subject = `Payment receipt - ${borrower?.name || "Borrower"} - ${payment.date || todayStr()}`;
       const body = [
         `Hi ${borrower?.name || "there"},`,
@@ -2436,15 +2472,44 @@
         "",
         "Thank you,"
       ].filter(Boolean).join("\n");
-      return { to, subject, body };
+      const textBody = [
+        `Hi ${borrower?.name || "there"}, Mango Loan received your payment of ${currency(payment.amount)} on ${payment.date || todayStr()}.`,
+        `Method: ${payment.method || "Payment"}.`,
+        `Remaining balance: ${currency(outstanding)}.`,
+        "Thank you."
+      ].filter(Boolean).join(" ");
+      return { emailTo, textTo, subject, body, textBody };
+    }
+
+    function renderReceiptCard() {
+      const receipt = state.currentReceipt;
+      if (!receipt) return;
+      const isText = state.receiptMode === "text";
+      document.getElementById("receiptTitle").textContent = isText ? "Payment Receipt Text" : "Payment Receipt Email";
+      document.getElementById("receiptEmailModeBtn").classList.toggle("active", !isText);
+      document.getElementById("receiptTextModeBtn").classList.toggle("active", isText);
+      document.getElementById("receiptToLabel").textContent = isText ? "Phone" : "To";
+      document.getElementById("receiptTo").placeholder = isText ? "(555) 555-5555" : "borrower@email.com";
+      document.getElementById("receiptTo").value = isText ? receipt.textTo : receipt.emailTo;
+      document.getElementById("receiptSubjectWrap").classList.toggle("hidden", isText);
+      document.getElementById("receiptSubject").value = receipt.subject;
+      document.getElementById("receiptBodyLabel").textContent = isText ? "Text Message" : "Email Body";
+      document.getElementById("receiptBody").value = isText ? receipt.textBody : receipt.body;
+      document.getElementById("copyReceiptBtn").textContent = isText ? "Copy Text" : "Copy Email";
+      document.getElementById("openReceiptBtn").textContent = isText ? "Open Text Draft" : "Open Email Draft";
+    }
+
+    function setReceiptMode(mode) {
+      state.receiptMode = mode === "text" ? "text" : "email";
+      renderReceiptCard();
     }
 
     function showReceiptForPayment(paymentId) {
       const receipt = buildReceiptForPayment(paymentId);
       if (!receipt) return;
-      document.getElementById("receiptTo").value = receipt.to;
-      document.getElementById("receiptSubject").value = receipt.subject;
-      document.getElementById("receiptBody").value = receipt.body;
+      state.currentReceipt = receipt;
+      state.receiptMode = "email";
+      renderReceiptCard();
       document.getElementById("receiptCard").classList.remove("hidden");
       document.getElementById("receiptCard").scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -2833,15 +2898,18 @@
       event.target.value = "";
     });
 
+    document.getElementById("receiptEmailModeBtn").addEventListener("click", () => setReceiptMode("email"));
+    document.getElementById("receiptTextModeBtn").addEventListener("click", () => setReceiptMode("text"));
+
     document.getElementById("copyReceiptBtn").addEventListener("click", async () => {
       const subject = document.getElementById("receiptSubject").value;
       const body = document.getElementById("receiptBody").value;
-      const text = `Subject: ${subject}\n\n${body}`;
+      const text = state.receiptMode === "text" ? body : `Subject: ${subject}\n\n${body}`;
       try {
         await navigator.clipboard.writeText(text);
-        showMessage("Receipt email copied.");
+        showMessage(state.receiptMode === "text" ? "Receipt text copied." : "Receipt email copied.");
       } catch (e) {
-        showMessage("Could not copy receipt email.");
+        showMessage(state.receiptMode === "text" ? "Could not copy receipt text." : "Could not copy receipt email.");
       }
     });
 
@@ -2849,6 +2917,12 @@
       const to = document.getElementById("receiptTo").value.trim();
       const subject = document.getElementById("receiptSubject").value;
       const body = document.getElementById("receiptBody").value;
+      if (state.receiptMode === "text") {
+        const phone = to.replace(/[^\d+]/g, "");
+        const href = `sms:${phone}?&body=${encodeURIComponent(body)}`;
+        window.location.href = href;
+        return;
+      }
       const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = href;
     });
