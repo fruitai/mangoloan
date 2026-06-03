@@ -475,21 +475,24 @@
     }
 
     .icon-action {
-      width: 38px;
-      min-width: 38px;
-      height: 38px;
-      min-height: 38px;
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
+      min-height: 32px;
       padding: 0;
-      border-radius: 999px;
-      font-size: 22px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--text);
+      box-shadow: none;
+      font-size: 24px;
       font-weight: 800;
       line-height: 1;
     }
 
-    .icon-action.close {
-      color: var(--danger);
-      background: var(--danger-bg);
-      border-color: #fecaca;
+    .icon-action:hover {
+      transform: none;
+      box-shadow: none;
     }
 
     .payment-history-list {
@@ -1989,8 +1992,8 @@
             <div class="muted small">${rows.length} ${rows.length === 1 ? "payment" : "payments"} · ${currency(totalPaid)} total paid</div>
           </div>
           <div class="row-actions">
-            <button type="button" class="icon-action primary" aria-label="Add payment" title="Add payment" onclick="addPaymentForBorrower('${borrower.id}')">+</button>
-            <button type="button" class="icon-action close" aria-label="Close payment history" title="Close payment history" onclick="closeBorrowerPaymentDetail()">x</button>
+            <button type="button" class="icon-action" aria-label="Add payment" title="Add payment" onclick="addPaymentForBorrower('${borrower.id}')">+</button>
+            <button type="button" class="icon-action" aria-label="Close payment history" title="Close payment history" onclick="closeBorrowerPaymentDetail()">x</button>
           </div>
         </div>
         ${
