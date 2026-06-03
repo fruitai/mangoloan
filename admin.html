@@ -238,6 +238,27 @@
       min-height: auto;
     }
 
+    .name-link {
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 0;
+      min-height: auto;
+      border-radius: 0;
+      box-shadow: none;
+      font: inherit;
+      font-weight: 800;
+      text-align: left;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .name-link:hover {
+      transform: none;
+      box-shadow: none;
+      color: var(--accent-dark);
+    }
+
     .auth-gate-wrap {
       min-height: 70vh;
     }
@@ -434,6 +455,46 @@
       flex-wrap: wrap;
     }
 
+    .borrower-detail-card {
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #ffffff, #fffaf0);
+    }
+
+    .borrower-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .borrower-detail-title {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+
+    .payment-history-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .payment-history-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.8fr) minmax(110px, 0.7fr) minmax(80px, 0.6fr) minmax(0, 1.4fr);
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+    }
+
+    .payment-history-amount {
+      color: var(--ok);
+      font-weight: 800;
+    }
+
     .zelle-preview {
       border: 1px dashed #ffb703;
       background: #fffbeb;
@@ -534,6 +595,11 @@
       .loan-form-actions button {
         flex: 1 1 100%;
         width: 100%;
+      }
+
+      .payment-history-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
       }
     }
 
@@ -749,6 +815,7 @@
       <div class="card toolbar">
         <input id="searchInput" class="search" placeholder="Search borrower, phone, or Zelle" />
       </div>
+      <div id="borrowerDetailCard" class="card borrower-detail-card hidden"></div>
       <div class="card table-wrap">
         <table>
           <thead>
@@ -1542,7 +1609,8 @@
     const state = {
       borrowers: [],
       loans: [],
-      payments: []
+      payments: [],
+      selectedBorrowerDetailId: null
     };
 
     function todayStr() {
@@ -1829,7 +1897,11 @@
         return `
           <tr>
             <td>
-              <div><strong>${escapeHtml(loan.borrower?.name || "Unknown")}</strong></div>
+              <div>
+                <button type="button" class="name-link" onclick="showBorrowerPaymentDetail('${loan.borrower_id || ""}')">
+                  ${escapeHtml(loan.borrower?.name || "Unknown")}
+                </button>
+              </div>
               <div class="small muted">${escapeHtml(loan.borrower?.zelle || loan.borrower?.phone || "")}</div>
             </td>
             <td>${currency(loan.principal)}</td>
@@ -1846,6 +1918,85 @@
           </tr>
         `;
       }).join("");
+    }
+
+    function borrowerPaymentRows(borrowerId) {
+      const borrowerLoans = state.loans.filter((loan) => loan.borrower_id === borrowerId);
+      const loanIds = new Set(borrowerLoans.map((loan) => loan.id));
+      return state.payments
+        .filter((payment) => loanIds.has(payment.loan_id))
+        .map((payment) => {
+          const loan = borrowerLoans.find((item) => item.id === payment.loan_id);
+          return { ...payment, loan };
+        })
+        .sort((a, b) => {
+          const cmp = String(a.date || "").localeCompare(String(b.date || "")) ||
+            String(a.created_at || "").localeCompare(String(b.created_at || ""));
+          return -cmp;
+        });
+    }
+
+    function renderBorrowerPaymentDetail() {
+      const card = document.getElementById("borrowerDetailCard");
+      const borrowerId = state.selectedBorrowerDetailId;
+      const borrower = state.borrowers.find((item) => item.id === borrowerId);
+
+      if (!borrower) {
+        card.classList.add("hidden");
+        card.innerHTML = "";
+        return;
+      }
+
+      const rows = borrowerPaymentRows(borrowerId);
+      const totalPaid = rows.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+
+      card.innerHTML = `
+        <div class="borrower-detail-header">
+          <div>
+            <h3 class="borrower-detail-title">${escapeHtml(borrower.name || "Borrower")}</h3>
+            <div class="muted small">${rows.length} ${rows.length === 1 ? "payment" : "payments"} · ${currency(totalPaid)} total paid</div>
+          </div>
+          <div class="row-actions">
+            <button type="button" onclick="addPaymentForBorrower('${borrower.id}')">Add Payment</button>
+            <button type="button" onclick="closeBorrowerPaymentDetail()">Close</button>
+          </div>
+        </div>
+        ${
+          rows.length
+            ? `<div class="payment-history-list">
+                ${rows.map((payment) => `
+                  <div class="payment-history-row">
+                    <div><strong>${escapeHtml(payment.date || "-")}</strong></div>
+                    <div class="payment-history-amount">${currency(payment.amount)}</div>
+                    <div>${escapeHtml(payment.method || "-")}</div>
+                    <div class="small muted">${escapeHtml(payment.notes || "")}</div>
+                  </div>
+                `).join("")}
+              </div>`
+            : `<div class="empty">No payments recorded for this borrower yet.</div>`
+        }
+      `;
+      card.classList.remove("hidden");
+    }
+
+    function showBorrowerPaymentDetail(borrowerId) {
+      if (!borrowerId) return;
+      state.selectedBorrowerDetailId = borrowerId;
+      renderBorrowerPaymentDetail();
+      const card = document.getElementById("borrowerDetailCard");
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function closeBorrowerPaymentDetail() {
+      state.selectedBorrowerDetailId = null;
+      renderBorrowerPaymentDetail();
+    }
+
+    function addPaymentForBorrower(borrowerId) {
+      const openLoan = getLoansWithStats().find((loan) => loan.borrower_id === borrowerId && loan.balance > 0);
+      switchTab("payments");
+      toggleAddPaymentPanel(true);
+      if (openLoan) document.getElementById("paymentLoan").value = openLoan.id;
     }
 
     function renderBorrowers() {
@@ -2000,6 +2151,7 @@
     function renderAll() {
       renderStats();
       renderLoans();
+      renderBorrowerPaymentDetail();
       renderBorrowers();
       renderPayments();
       renderBorrowerOptions();
@@ -2268,6 +2420,9 @@
     }
 
     window.editBorrower = editBorrower;
+    window.showBorrowerPaymentDetail = showBorrowerPaymentDetail;
+    window.closeBorrowerPaymentDetail = closeBorrowerPaymentDetail;
+    window.addPaymentForBorrower = addPaymentForBorrower;
     window.toggleBorrowerCardEdit = toggleBorrowerCardEdit;
     window.saveBorrowerCard = saveBorrowerCard;
     window.createBorrowerPortalUser = createBorrowerPortalUser;
