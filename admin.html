@@ -862,6 +862,7 @@
       <div class="actions">
         <button id="copyReceiptBtn">Copy Email</button>
         <button id="openReceiptBtn" class="primary">Open Email Draft</button>
+        <button id="sendReceiptTextBtn" class="primary hidden">Send Text</button>
       </div>
     </div>
 
@@ -2497,6 +2498,7 @@
       document.getElementById("receiptBody").value = isText ? receipt.textBody : receipt.body;
       document.getElementById("copyReceiptBtn").textContent = isText ? "Copy Text" : "Copy Email";
       document.getElementById("openReceiptBtn").textContent = isText ? "Open Text Draft" : "Open Email Draft";
+      document.getElementById("sendReceiptTextBtn").classList.toggle("hidden", !isText);
     }
 
     function setReceiptMode(mode) {
@@ -2925,6 +2927,33 @@
       }
       const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = href;
+    });
+
+    document.getElementById("sendReceiptTextBtn").addEventListener("click", async () => {
+      if (state.receiptMode !== "text") return showMessage("Switch to Text first.");
+      const phone = document.getElementById("receiptTo").value.trim();
+      const message = document.getElementById("receiptBody").value.trim();
+      if (!phone) return showMessage("Enter a phone number.");
+      if (!message) return showMessage("Enter a receipt text.");
+
+      const btn = document.getElementById("sendReceiptTextBtn");
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Sending...";
+      try {
+        const { data, error } = await supabaseClient.functions.invoke("send-payment-receipt", {
+          body: { phone, message }
+        });
+        if (error || data?.error) {
+          throw new Error(data?.error || error?.message || "Could not send receipt text.");
+        }
+        showMessage(data?.message || "Receipt text sent.");
+      } catch (e) {
+        showMessage((e && e.message) || "Could not send receipt text.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
     });
 
     document.getElementById("staffSignInBtn").addEventListener("click", async () => {
