@@ -884,6 +884,15 @@
           <div class="field"><label>Interest Rate %</label><input id="loanRate" type="number" step="0.01" /></div>
           <div class="field loan-date-field"><label>Start Date</label><input id="loanStartDate" type="date" /></div>
           <div class="field loan-date-field"><label>Due Date</label><input id="loanDueDate" type="date" /></div>
+          <label class="small muted" style="display:flex;align-items:center;gap:8px;margin:0 0 14px;">
+            <input id="loanTextRemindersEnabled" type="checkbox" checked style="width:auto;min-height:auto;" />
+            Send monthly text reminders for this loan
+          </label>
+          <div class="grid-3">
+            <div class="field"><label>Monthly Due Day</label><input id="loanMonthlyDueDay" type="number" min="1" max="31" placeholder="Auto from due date" /></div>
+            <div class="field"><label>Due Reminder Days Before</label><input id="loanDueReminderDaysBefore" type="number" min="0" max="14" value="3" /></div>
+            <div class="field"><label>Late Reminder Days After</label><input id="loanLateReminderDaysAfter" type="number" min="1" max="30" value="3" /></div>
+          </div>
           <div class="field"><label>Notes</label><textarea id="loanNotes"></textarea></div>
           <div class="actions loan-form-actions">
             <button id="addLoanBtn" type="button" class="primary">Add Loan</button>
@@ -922,6 +931,10 @@
           <div class="field"><label>Name</label><input id="borrowerName" /></div>
           <div class="field"><label>Email</label><input id="borrowerEmail" /></div>
           <div class="field"><label>Phone</label><input id="borrowerPhone" /></div>
+          <label class="small muted" style="display:flex;align-items:center;gap:8px;margin:0 0 14px;">
+            <input id="borrowerTextOptIn" type="checkbox" style="width:auto;min-height:auto;" />
+            Borrower agreed to receive Mango Loan payment texts
+          </label>
           <div class="field"><label>Zelle</label><input id="borrowerZelle" /></div>
           <div class="field"><label>Notes</label><textarea id="borrowerNotes"></textarea></div>
           <p class="small muted" style="margin-top:-4px;">Create Borrower + Portal Login will create the borrower and link the borrower portal login in one step.</p>
@@ -1023,6 +1036,15 @@
           <div class="field"><label>Interest Rate %</label><input id="editLoanRate" type="number" step="0.01" /></div>
           <div class="field"><label>Start Date</label><input id="editLoanStartDate" type="date" /></div>
           <div class="field"><label>Due Date</label><input id="editLoanDueDate" type="date" /></div>
+          <label class="small muted" style="display:flex;align-items:center;gap:8px;margin:0 0 14px;">
+            <input id="editLoanTextRemindersEnabled" type="checkbox" style="width:auto;min-height:auto;" />
+            Send monthly text reminders for this loan
+          </label>
+          <div class="grid-3">
+            <div class="field"><label>Monthly Due Day</label><input id="editLoanMonthlyDueDay" type="number" min="1" max="31" /></div>
+            <div class="field"><label>Due Reminder Days Before</label><input id="editLoanDueReminderDaysBefore" type="number" min="0" max="14" /></div>
+            <div class="field"><label>Late Reminder Days After</label><input id="editLoanLateReminderDaysAfter" type="number" min="1" max="30" /></div>
+          </div>
           <div class="field"><label>Notes</label><textarea id="editLoanNotes"></textarea></div>
           <button id="saveLoanEditBtn" class="primary">Save Loan</button>
         </div>
@@ -1707,6 +1729,19 @@
       }).format(Number(n || 0));
     }
 
+    function numberInRange(value, fallback, min, max) {
+      if (value === "" || value === null || typeof value === "undefined") return fallback;
+      const n = Number(value);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, Math.round(n)));
+    }
+
+    function dueDayFromDate(dateText) {
+      if (!dateText) return null;
+      const day = Number(String(dateText).slice(-2));
+      return Number.isFinite(day) ? numberInRange(day, day, 1, 31) : null;
+    }
+
     function showMessage(text) {
       const box = document.getElementById("messageBox");
       box.textContent = text;
@@ -2099,6 +2134,7 @@
           <div class="muted">${escapeHtml(b.email || "No email")}</div>
           <div class="muted">${escapeHtml(b.phone || "No phone")}</div>
           <div class="muted">${escapeHtml(b.zelle || "No Zelle")}</div>
+          <div class="small muted">Texts: ${b.text_opt_in ? "Opted in" : "Off"}</div>
           <div class="small muted">Portal: ${b.auth_user_id ? "Linked" : "Not linked"}</div>
           ${b.notes ? `<div class="small muted" style="margin-top:8px;">${escapeHtml(b.notes)}</div>` : ""}
           <div id="borrowerEditor-${b.id}" class="hidden" style="margin-top:14px;">
@@ -2113,6 +2149,10 @@
             </div>
             <p id="borrowerPortalUserResult-${b.id}" class="small muted hidden"></p>
             <div class="field"><label>Phone</label><input id="borrowerEditPhone-${b.id}" value="${escapeHtml(b.phone || "")}" /></div>
+            <label class="small muted" style="display:flex;align-items:center;gap:8px;margin:0 0 14px;">
+              <input id="borrowerEditTextOptIn-${b.id}" type="checkbox" ${b.text_opt_in ? "checked" : ""} style="width:auto;min-height:auto;" />
+              Borrower agreed to receive Mango Loan payment texts
+            </label>
             <div class="field"><label>Zelle</label><input id="borrowerEditZelle-${b.id}" value="${escapeHtml(b.zelle || "")}" /></div>
             <div class="field"><label>Notes</label><textarea id="borrowerEditNotes-${b.id}">${escapeHtml(b.notes || "")}</textarea></div>
             <div class="row-actions">
@@ -2171,6 +2211,11 @@
 
       tbody.innerHTML = rows.map((p) => {
         const loanLabel = p.loan ? currency(p.loan.principal) : "-";
+        const textStatus = p.receipt_text_sent_at
+          ? `Receipt text sent ${String(p.receipt_text_sent_at).slice(0, 10)}`
+          : p.receipt_text_error
+            ? `Receipt text failed: ${p.receipt_text_error}`
+            : "";
         return `
           <tr>
             <td>${escapeHtml(p.date || "")}</td>
@@ -2179,7 +2224,10 @@
             <td>${escapeHtml(p.method || "")}</td>
             <td>${currency(p.amount)}</td>
             <td>${currency(runningBalanceMap[p.id] || 0)}</td>
-            <td>${escapeHtml(p.notes || "-")}</td>
+            <td>
+              ${escapeHtml(p.notes || "-")}
+              ${textStatus ? `<div class="small muted">${escapeHtml(textStatus)}</div>` : ""}
+            </td>
             <td>
               <div class="row-actions">
                 <button onclick="editPayment('${p.id}')">Edit</button>
@@ -2260,11 +2308,16 @@
 
     async function saveBorrowerCard(id) {
       if (!id) return;
+      const borrower = state.borrowers.find((b) => b.id === id);
+      const textOptIn = document.getElementById(`borrowerEditTextOptIn-${id}`)?.checked || false;
       const payload = {
         name: borrowerCardField(id, "Name").value.trim(),
         email: borrowerCardField(id, "Email").value.trim(),
         auth_user_id: borrowerCardField(id, "AuthUserId").value.trim() || null,
         phone: borrowerCardField(id, "Phone").value.trim(),
+        text_opt_in: textOptIn,
+        text_opt_in_at: textOptIn && !borrower?.text_opt_in ? new Date().toISOString() : borrower?.text_opt_in_at || null,
+        text_opt_out_at: !textOptIn && borrower?.text_opt_in ? new Date().toISOString() : borrower?.text_opt_out_at || null,
         zelle: borrowerCardField(id, "Zelle").value.trim(),
         notes: borrowerCardField(id, "Notes").value.trim()
       };
@@ -2425,6 +2478,10 @@
       document.getElementById("editLoanRate").value = loan.rate || "";
       document.getElementById("editLoanStartDate").value = loan.start_date || "";
       document.getElementById("editLoanDueDate").value = loan.due_date || "";
+      document.getElementById("editLoanTextRemindersEnabled").checked = loan.text_reminders_enabled !== false;
+      document.getElementById("editLoanMonthlyDueDay").value = loan.monthly_due_day || "";
+      document.getElementById("editLoanDueReminderDaysBefore").value = loan.due_reminder_days_before ?? 3;
+      document.getElementById("editLoanLateReminderDaysAfter").value = loan.late_reminder_days_after ?? 3;
       document.getElementById("editLoanNotes").value = loan.notes || "";
     }
 
@@ -2479,7 +2536,23 @@
         `Remaining balance: ${currency(outstanding)}.`,
         "Thank you."
       ].filter(Boolean).join(" ");
-      return { emailTo, textTo, subject, body, textBody };
+      return { paymentId, emailTo, textTo, textOptIn: Boolean(borrower?.text_opt_in), subject, body, textBody };
+    }
+
+    async function sendReceiptText(receipt) {
+      if (!receipt?.textTo) throw new Error("Borrower phone is required before sending a receipt text.");
+      if (!receipt?.textOptIn) throw new Error("Borrower has not opted in to Mango Loan texts.");
+      const { data, error } = await supabaseClient.functions.invoke("send-payment-receipt", {
+        body: {
+          phone: receipt.textTo,
+          message: receipt.textBody,
+          paymentId: receipt.paymentId
+        }
+      });
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || "Could not send receipt text.");
+      }
+      return data;
     }
 
     function renderReceiptCard() {
@@ -2573,6 +2646,10 @@
         rate: Number(document.getElementById("editLoanRate").value || 0),
         start_date: document.getElementById("editLoanStartDate").value || null,
         due_date: document.getElementById("editLoanDueDate").value || null,
+        text_reminders_enabled: document.getElementById("editLoanTextRemindersEnabled").checked,
+        monthly_due_day: numberInRange(document.getElementById("editLoanMonthlyDueDay").value, dueDayFromDate(document.getElementById("editLoanDueDate").value), 1, 31),
+        due_reminder_days_before: numberInRange(document.getElementById("editLoanDueReminderDaysBefore").value, 3, 0, 14),
+        late_reminder_days_after: numberInRange(document.getElementById("editLoanLateReminderDaysAfter").value, 3, 1, 30),
         notes: document.getElementById("editLoanNotes").value.trim()
       };
 
@@ -2622,6 +2699,7 @@
       document.getElementById("borrowerName").value = "";
       document.getElementById("borrowerEmail").value = "";
       document.getElementById("borrowerPhone").value = "";
+      document.getElementById("borrowerTextOptIn").checked = false;
       document.getElementById("borrowerZelle").value = "";
       document.getElementById("borrowerNotes").value = "";
       toggleAddBorrowerPanel(false);
@@ -2634,6 +2712,7 @@
       const name = document.getElementById("borrowerName").value.trim();
       const email = document.getElementById("borrowerEmail").value.trim();
       const phone = document.getElementById("borrowerPhone").value.trim();
+      const textOptIn = document.getElementById("borrowerTextOptIn").checked;
       const zelle = document.getElementById("borrowerZelle").value.trim();
       const notes = document.getElementById("borrowerNotes").value.trim();
 
@@ -2648,14 +2727,23 @@
       result.classList.remove("hidden");
 
       let insertedBorrower = null;
+      const borrowerPayload = {
+        name,
+        email,
+        phone,
+        text_opt_in: textOptIn,
+        text_opt_in_at: textOptIn ? new Date().toISOString() : null,
+        zelle,
+        notes
+      };
       let insertResult = await supabaseClient.from("borrowers").insert([
-        { name, email, phone, zelle, notes, auth_user_id: null }
+        { ...borrowerPayload, auth_user_id: null }
       ]).select().single();
 
       if (insertResult.error) {
         console.warn("Borrower insert with null auth_user_id failed; retrying without auth_user_id.", insertResult.error);
         insertResult = await supabaseClient.from("borrowers").insert([
-          { name, email, phone, zelle, notes }
+          borrowerPayload
         ]).select().single();
       }
 
@@ -2714,6 +2802,10 @@
       document.getElementById("loanRate").value = "";
       document.getElementById("loanStartDate").value = todayStr();
       document.getElementById("loanDueDate").value = "";
+      document.getElementById("loanTextRemindersEnabled").checked = true;
+      document.getElementById("loanMonthlyDueDay").value = "";
+      document.getElementById("loanDueReminderDaysBefore").value = "3";
+      document.getElementById("loanLateReminderDaysAfter").value = "3";
       document.getElementById("loanNotes").value = "";
       toggleAddLoanPanel(false);
     }
@@ -2745,6 +2837,7 @@
       const rate = document.getElementById("loanRate").value;
       const startDate = document.getElementById("loanStartDate").value || todayStr();
       const dueDate = document.getElementById("loanDueDate").value;
+      const monthlyDueDay = document.getElementById("loanMonthlyDueDay").value;
       const notes = document.getElementById("loanNotes").value.trim();
 
       if (!borrowerId || !principal) {
@@ -2758,6 +2851,10 @@
         rate: Number(rate || 0),
         start_date: startDate || null,
         due_date: dueDate || null,
+        text_reminders_enabled: document.getElementById("loanTextRemindersEnabled").checked,
+        monthly_due_day: numberInRange(monthlyDueDay, dueDayFromDate(dueDate), 1, 31),
+        due_reminder_days_before: numberInRange(document.getElementById("loanDueReminderDaysBefore").value, 3, 0, 14),
+        late_reminder_days_after: numberInRange(document.getElementById("loanLateReminderDaysAfter").value, 3, 1, 30),
         notes
       };
 
@@ -2828,7 +2925,23 @@
       clearAddPaymentForm(true);
 
       await loadAllData();
-      if (newPayment) showReceiptForPayment(newPayment.id);
+      if (newPayment) {
+        showReceiptForPayment(newPayment.id);
+        const receipt = buildReceiptForPayment(newPayment.id);
+        if (receipt?.textOptIn && receipt?.textTo) {
+          try {
+            await sendReceiptText(receipt);
+            await loadAllData();
+            showReceiptForPayment(newPayment.id);
+            showMessage("Payment added and receipt text sent.");
+            return;
+          } catch (e) {
+            console.warn("Receipt text failed:", e);
+            showMessage("Payment added. Receipt text not sent: " + ((e && e.message) || "check Twilio setup."));
+            return;
+          }
+        }
+      }
       showMessage("Payment added.");
     });
 
@@ -2941,11 +3054,16 @@
       btn.disabled = true;
       btn.textContent = "Sending...";
       try {
-        const { data, error } = await supabaseClient.functions.invoke("send-payment-receipt", {
-          body: { phone, message }
-        });
-        if (error || data?.error) {
-          throw new Error(data?.error || error?.message || "Could not send receipt text.");
+        const receipt = {
+          ...(state.currentReceipt || {}),
+          textTo: phone,
+          textBody: message
+        };
+        const data = await sendReceiptText(receipt);
+        if (state.currentReceipt?.paymentId) {
+          await loadAllData();
+          showReceiptForPayment(state.currentReceipt.paymentId);
+          setReceiptMode("text");
         }
         showMessage(data?.message || "Receipt text sent.");
       } catch (e) {

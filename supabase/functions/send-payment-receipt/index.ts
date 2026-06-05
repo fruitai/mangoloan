@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
   if (adminError) return appError("Could not verify admin access.");
   if (!adminRows?.length) return appError("Admin access required.");
 
-  let body: { phone?: string; message?: string } = {};
+  let body: { phone?: string; message?: string; paymentId?: string } = {};
   try {
     body = await req.json();
   } catch (_err) {
@@ -86,6 +86,7 @@ Deno.serve(async (req) => {
 
   const to = normalizePhone(body.phone || "");
   const message = String(body.message || "").trim();
+  const paymentId = String(body.paymentId || "").trim();
   if (!to || to.length < 8) return appError("Enter a valid phone number.");
   if (!message) return appError("Enter a receipt text message.");
   if (message.length > 1500) return appError("Receipt text is too long.");
@@ -118,10 +119,31 @@ Deno.serve(async (req) => {
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (paymentId) {
+      await adminClient
+        .from("payments")
+        .update({
+          receipt_text_status: "failed",
+          receipt_text_error: result?.message || "Twilio could not send this receipt text."
+        })
+        .eq("id", paymentId);
+    }
     return appError(result?.message || "Twilio could not send this receipt text.", {
       code: result?.code,
       status: response.status
     });
+  }
+
+  if (paymentId) {
+    await adminClient
+      .from("payments")
+      .update({
+        receipt_text_sent_at: new Date().toISOString(),
+        receipt_text_status: result?.status || "sent",
+        receipt_text_sid: result?.sid || null,
+        receipt_text_error: null
+      })
+      .eq("id", paymentId);
   }
 
   return json({
