@@ -16,6 +16,7 @@ type Borrower = {
 type Loan = {
   id: string;
   principal: number | string | null;
+  monthly_payment_amount: number | string | null;
   due_date: string | null;
   monthly_due_day: number | null;
   text_reminders_enabled: boolean | null;
@@ -164,7 +165,7 @@ Deno.serve(async (req) => {
 
   const { data: loans, error: loanError } = await adminClient
     .from("loans")
-    .select("id, principal, due_date, monthly_due_day, text_reminders_enabled, due_reminder_days_before, late_reminder_days_after, last_due_reminder_for, last_late_reminder_for, borrower:borrowers(id, name, phone, text_opt_in)")
+    .select("id, principal, monthly_payment_amount, due_date, monthly_due_day, text_reminders_enabled, due_reminder_days_before, late_reminder_days_after, last_due_reminder_for, last_late_reminder_for, borrower:borrowers(id, name, phone, text_opt_in)")
     .eq("text_reminders_enabled", true);
   if (loanError) return appError("Could not load loans.", { details: loanError.message });
 
@@ -200,9 +201,13 @@ Deno.serve(async (req) => {
     }
 
     const paidThisCycle = ((payments || []) as Payment[]).reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-    const principal = Number(loan.principal || 0);
+    const monthlyPayment = Number(loan.monthly_payment_amount || 0);
+    if (monthlyPayment <= 0) {
+      skipped.push({ loanId: loan.id, reason: "No monthly payment amount." });
+      continue;
+    }
     const shouldSendDue = todayText === dateKey(dueReminderDate) && loan.last_due_reminder_for !== dueDateText;
-    const shouldSendLate = todayText === dateKey(lateReminderDate) && paidThisCycle <= 0 && loan.last_late_reminder_for !== dueDateText;
+    const shouldSendLate = todayText === dateKey(lateReminderDate) && paidThisCycle < monthlyPayment && loan.last_late_reminder_for !== dueDateText;
 
     if (!shouldSendDue && !shouldSendLate) {
       skipped.push({ loanId: loan.id, reason: "No reminder due today." });
@@ -211,8 +216,8 @@ Deno.serve(async (req) => {
 
     const reminderType = shouldSendLate ? "late" : "due";
     const message = shouldSendLate
-      ? `Mango Loan reminder: we have not received your payment due ${dueDateText}. Please contact us if already paid. Reply STOP to opt out.`
-      : `Mango Loan reminder: your payment is due on ${dueDateText}. Current loan amount: ${currency(principal)}. Reply STOP to opt out.`;
+      ? `Mango Loan reminder: we have not received your ${currency(monthlyPayment)} payment due ${dueDateText}. Please contact us if already paid. Reply STOP to opt out.`
+      : `Mango Loan reminder: your ${currency(monthlyPayment)} payment is due on ${dueDateText}. Reply STOP to opt out.`;
 
     try {
       const result = await sendTwilioText(phone, message);

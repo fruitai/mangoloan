@@ -9,6 +9,7 @@ alter table public.borrowers
 
 alter table public.loans
   add column if not exists monthly_due_day integer,
+  add column if not exists monthly_payment_amount numeric(12, 2),
   add column if not exists text_reminders_enabled boolean not null default true,
   add column if not exists due_reminder_days_before integer not null default 3,
   add column if not exists late_reminder_days_after integer not null default 3,
@@ -46,6 +47,16 @@ begin
     alter table public.loans
       add constraint loans_monthly_due_day_range
       check (monthly_due_day is null or monthly_due_day between 1 and 31);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'loans_monthly_payment_amount_nonnegative'
+      and conrelid = 'public.loans'::regclass
+  ) then
+    alter table public.loans
+      add constraint loans_monthly_payment_amount_nonnegative
+      check (monthly_payment_amount is null or monthly_payment_amount >= 0);
   end if;
 
   if not exists (

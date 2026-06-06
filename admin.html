@@ -881,6 +881,7 @@
           <h3>Create Loan</h3>
           <div class="field"><label>Borrower</label><select id="loanBorrower"></select></div>
           <div class="field"><label>Principal</label><input id="loanPrincipal" type="number" step="0.01" /></div>
+          <div class="field"><label>Monthly Payment</label><input id="loanMonthlyPaymentAmount" type="number" step="0.01" placeholder="Amount due each month" /></div>
           <div class="field"><label>Interest Rate %</label><input id="loanRate" type="number" step="0.01" /></div>
           <div class="field loan-date-field"><label>Start Date</label><input id="loanStartDate" type="date" /></div>
           <div class="field loan-date-field"><label>Due Date</label><input id="loanDueDate" type="date" /></div>
@@ -913,6 +914,7 @@
               <th>Principal</th>
               <th>Paid</th>
               <th>Balance</th>
+              <th>Monthly</th>
               <th>Due</th>
               <th>Status</th>
               <th>Actions</th>
@@ -1033,6 +1035,7 @@
           <div class="field"><label>Select Loan</label><select id="editLoanSelect"></select></div>
           <div class="field"><label>Borrower</label><select id="editLoanBorrower"></select></div>
           <div class="field"><label>Principal</label><input id="editLoanPrincipal" type="number" step="0.01" /></div>
+          <div class="field"><label>Monthly Payment</label><input id="editLoanMonthlyPaymentAmount" type="number" step="0.01" /></div>
           <div class="field"><label>Interest Rate %</label><input id="editLoanRate" type="number" step="0.01" /></div>
           <div class="field"><label>Start Date</label><input id="editLoanStartDate" type="date" /></div>
           <div class="field"><label>Due Date</label><input id="editLoanDueDate" type="date" /></div>
@@ -1752,6 +1755,13 @@
       return Math.min(max, Math.max(min, Math.round(n)));
     }
 
+    function nullableMoney(value) {
+      if (value === "" || value === null || typeof value === "undefined") return null;
+      const n = Number(value);
+      if (!Number.isFinite(n) || n < 0) return null;
+      return Math.round(n * 100) / 100;
+    }
+
     function dueDayFromDate(dateText) {
       if (!dateText) return null;
       const day = Number(String(dateText).slice(-2));
@@ -1900,8 +1910,9 @@
       const payments = state.payments.filter((p) => p.loan_id === loan.id);
       const paid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
       const balance = Number(loan.principal || 0) - paid;
+      const monthlyPaymentAmount = Number(loan.monthly_payment_amount || 0);
       const isLate = loan.due_date && balance > 0 && new Date(loan.due_date) < new Date();
-      return { ...loan, borrower, payments, paid, balance, isLate };
+      return { ...loan, borrower, payments, paid, balance, monthlyPaymentAmount, isLate };
     }
 
     function getLoansWithStats() {
@@ -2022,7 +2033,7 @@
       });
 
       if (!loans.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty">No loans yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">No loans yet</td></tr>';
         return;
       }
 
@@ -2050,6 +2061,7 @@
             <td>${currency(loan.principal)}</td>
             <td>${currency(loan.paid)}</td>
             <td><strong>${currency(loan.balance)}</strong></td>
+            <td>${loan.monthlyPaymentAmount > 0 ? currency(loan.monthlyPaymentAmount) : "-"}</td>
             <td>${escapeHtml(loan.due_date || "-")}</td>
             <td><span class="badge ${badgeClass}">${badgeText}</span></td>
             <td>
@@ -2501,6 +2513,7 @@
       document.getElementById("editLoanSelect").value = loan.id;
       document.getElementById("editLoanBorrower").value = loan.borrower_id || "";
       document.getElementById("editLoanPrincipal").value = loan.principal || "";
+      document.getElementById("editLoanMonthlyPaymentAmount").value = loan.monthly_payment_amount || "";
       document.getElementById("editLoanRate").value = loan.rate || "";
       document.getElementById("editLoanStartDate").value = loan.start_date || "";
       document.getElementById("editLoanDueDate").value = loan.due_date || "";
@@ -2669,6 +2682,7 @@
       const payload = {
         borrower_id: document.getElementById("editLoanBorrower").value,
         principal: Number(document.getElementById("editLoanPrincipal").value || 0),
+        monthly_payment_amount: nullableMoney(document.getElementById("editLoanMonthlyPaymentAmount").value),
         rate: Number(document.getElementById("editLoanRate").value || 0),
         start_date: document.getElementById("editLoanStartDate").value || null,
         due_date: document.getElementById("editLoanDueDate").value || null,
@@ -2825,6 +2839,7 @@
     function clearAddLoanForm() {
       document.getElementById("loanBorrower").value = "";
       document.getElementById("loanPrincipal").value = "";
+      document.getElementById("loanMonthlyPaymentAmount").value = "";
       document.getElementById("loanRate").value = "";
       document.getElementById("loanStartDate").value = todayStr();
       document.getElementById("loanDueDate").value = nextMonthlyDueDate(1);
@@ -2860,6 +2875,7 @@
     document.getElementById("addLoanBtn").addEventListener("click", async () => {
       const borrowerId = document.getElementById("loanBorrower").value;
       const principal = document.getElementById("loanPrincipal").value;
+      const monthlyPaymentAmount = document.getElementById("loanMonthlyPaymentAmount").value;
       const rate = document.getElementById("loanRate").value;
       const startDate = document.getElementById("loanStartDate").value || todayStr();
       const dueDate = document.getElementById("loanDueDate").value;
@@ -2874,6 +2890,7 @@
       const payload = {
         borrower_id: borrowerId,
         principal: Number(principal || 0),
+        monthly_payment_amount: nullableMoney(monthlyPaymentAmount),
         rate: Number(rate || 0),
         start_date: startDate || null,
         due_date: dueDate || null,
