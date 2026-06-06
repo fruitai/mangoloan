@@ -708,8 +708,6 @@
       const totalPaid = paymentRows.reduce((sum, p) => sum + Number(p.amount || 0), 0);
       const principal = Number(loan.principal || 0);
       const monthlyPaymentAmount = Number(loan.monthly_payment_amount || 0);
-      const balance = Math.max(0, principal - totalPaid);
-      const payoffPercent = principal > 0 ? Math.min(100, Math.round((totalPaid / principal) * 100)) : 0;
       const borrowedRows = advances && advances.length
         ? advances.map((a) => ({
             id: a.id,
@@ -721,6 +719,9 @@
             notes: a.notes || "Borrowed amount"
           }))
         : principalEntriesFromLoan(loan);
+      const totalBorrowed = borrowedRows.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+      const balance = Math.max(0, totalBorrowed - totalPaid);
+      const payoffPercent = totalBorrowed > 0 ? Math.min(100, Math.round((totalPaid / totalBorrowed) * 100)) : 0;
       const activityAsc = borrowedRows.concat(paymentRows.map((p) => ({
         id: p.id,
         date: p.date,
@@ -746,7 +747,7 @@
       const lastPayment = sortedAsc.length ? sortedAsc[sortedAsc.length - 1] : null;
 
       document.getElementById("welcomeTitle").textContent = `${borrower.name}'s Loan`;
-      document.getElementById("principalValue").textContent = currency(principal);
+      document.getElementById("principalValue").textContent = currency(totalBorrowed);
       document.getElementById("paidValue").textContent = currency(totalPaid);
       document.getElementById("balanceValue").textContent = currency(balance);
       document.getElementById("payoffProgress").style.width = payoffPercent + "%";

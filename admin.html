@@ -995,6 +995,34 @@
       </div>
     </div>
 
+    <div class="card payment-entry-card" style="margin-bottom:16px;">
+      <button id="showAddAdvanceBtn" type="button" class="primary wide-add-button">Add Advance</button>
+      <div id="addAdvancePanel" class="hidden">
+        <h3>Add Advance</h3>
+        <div class="grid-3">
+          <div class="field"><label>Loan</label><select id="advanceLoan"></select></div>
+          <div class="field"><label>Amount Borrowed</label><input id="advanceAmount" type="number" step="0.01" /></div>
+          <div class="field payment-date-field"><label>Date</label><input id="advanceDate" type="date" /></div>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label>Method</label>
+            <select id="advanceMethod">
+              <option>Cash</option>
+              <option>Zelle</option>
+              <option>Venmo</option>
+              <option>Bank Transfer</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field payment-notes-field"><label>Notes</label><textarea id="advanceNotes" placeholder="Additional principal borrowed"></textarea></div>
+        </div>
+        <div class="actions payment-form-actions">
+          <button id="addAdvanceBtn" type="button" class="primary">Add Advance</button>
+          <button id="cancelAddAdvanceBtn" type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
+
       <div class="card toolbar">
         <input id="paymentSearchInput" class="search" placeholder="Filter borrower, method, notes, or date" />
         <select id="paymentSortSelect" style="max-width:220px;">
@@ -1715,6 +1743,7 @@
       borrowers: [],
       loans: [],
       payments: [],
+      advances: [],
       selectedBorrowerDetailId: null,
       currentReceipt: null,
       receiptMode: "email"
@@ -1908,11 +1937,14 @@
     function getLoanStats(loan) {
       const borrower = state.borrowers.find((b) => b.id === loan.borrower_id);
       const payments = state.payments.filter((p) => p.loan_id === loan.id);
+      const advances = state.advances.filter((a) => a.loan_id === loan.id);
       const paid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-      const balance = Number(loan.principal || 0) - paid;
+      const advanced = advances.reduce((sum, a) => sum + Number(a.amount || 0), 0);
+      const totalBorrowed = advances.length ? advanced : Number(loan.principal || 0);
+      const balance = totalBorrowed - paid;
       const monthlyPaymentAmount = Number(loan.monthly_payment_amount || 0);
       const isLate = loan.due_date && balance > 0 && new Date(loan.due_date) < new Date();
-      return { ...loan, borrower, payments, paid, balance, monthlyPaymentAmount, isLate };
+      return { ...loan, borrower, payments, advances, paid, advanced, totalBorrowed, balance, monthlyPaymentAmount, isLate };
     }
 
     function getLoansWithStats() {
@@ -1986,8 +2018,13 @@
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (borrowerError || loanError || paymentError) {
-        const err = borrowerError || loanError || paymentError;
+      const { data: advances, error: advanceError } = await supabaseClient
+        .from("loan_advances")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (borrowerError || loanError || paymentError || advanceError) {
+        const err = borrowerError || loanError || paymentError || advanceError;
         console.error(err);
         var em = (err.message || "").toLowerCase();
         var authHint =
@@ -2003,12 +2040,13 @@
       state.borrowers = borrowers || [];
       state.loans = loans || [];
       state.payments = payments || [];
+      state.advances = advances || [];
       renderAll();
     }
 
     function renderStats() {
       const loans = getLoansWithStats();
-      const totalLoaned = state.loans.reduce((sum, l) => sum + Number(l.principal || 0), 0);
+      const totalLoaned = loans.reduce((sum, l) => sum + Number(l.totalBorrowed || 0), 0);
       const totalCollected = state.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
       const outstanding = Math.max(0, totalLoaned - totalCollected);
       const activeLoans = loans.filter((l) => l.balance > 0).length;
@@ -2066,6 +2104,7 @@
             <td><span class="badge ${badgeClass}">${badgeText}</span></td>
             <td>
               <div class="row-actions">
+                <button onclick="addAdvanceForLoan('${loan.id}')">Advance</button>
                 <button onclick="editLoan('${loan.id}')">Edit</button>
                 <button class="danger-link" onclick="deleteLoan('${loan.id}')">Delete</button>
               </div>
@@ -2075,20 +2114,27 @@
       }).join("");
     }
 
-    function borrowerPaymentRows(borrowerId) {
+    function borrowerActivityRows(borrowerId) {
       const borrowerLoans = state.loans.filter((loan) => loan.borrower_id === borrowerId);
       const loanIds = new Set(borrowerLoans.map((loan) => loan.id));
-      return state.payments
+      const paymentRows = state.payments
         .filter((payment) => loanIds.has(payment.loan_id))
         .map((payment) => {
           const loan = borrowerLoans.find((item) => item.id === payment.loan_id);
-          return { ...payment, loan };
-        })
-        .sort((a, b) => {
-          const cmp = String(a.date || "").localeCompare(String(b.date || "")) ||
-            String(a.created_at || "").localeCompare(String(b.created_at || ""));
-          return -cmp;
+          return { ...payment, loan, type: "Payment" };
         });
+      const advanceRows = state.advances
+        .filter((advance) => loanIds.has(advance.loan_id))
+        .map((advance) => {
+          const loan = borrowerLoans.find((item) => item.id === advance.loan_id);
+          return { ...advance, loan, type: "Advance" };
+        });
+      return paymentRows.concat(advanceRows).sort((a, b) => {
+        const cmp = String(a.date || "").localeCompare(String(b.date || "")) ||
+          String(a.created_at || "").localeCompare(String(b.created_at || "")) ||
+          String(a.type || "").localeCompare(String(b.type || ""));
+        return -cmp;
+      });
     }
 
     function renderBorrowerPaymentDetail() {
@@ -2102,35 +2148,42 @@
         return;
       }
 
-      const rows = borrowerPaymentRows(borrowerId);
-      const totalPaid = rows.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+      const rows = borrowerActivityRows(borrowerId);
+      const totalPaid = rows
+        .filter((row) => row.type === "Payment")
+        .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+      const totalAdvanced = rows
+        .filter((row) => row.type === "Advance")
+        .reduce((sum, advance) => sum + Number(advance.amount || 0), 0);
 
       card.innerHTML = `
         <div class="borrower-detail-header">
           <div>
             <h3 class="borrower-detail-title">${escapeHtml(borrower.name || "Borrower")}</h3>
-            <div class="muted small">${rows.length} ${rows.length === 1 ? "payment" : "payments"} · ${currency(totalPaid)} total paid</div>
+            <div class="muted small">${currency(totalPaid)} paid · ${currency(totalAdvanced)} extra advanced</div>
           </div>
           <div class="row-actions">
             <button type="button" class="icon-action" aria-label="Add payment" title="Add payment" onclick="addPaymentForBorrower('${borrower.id}')">+</button>
+            <button type="button" onclick="addAdvanceForBorrower('${borrower.id}')">Advance</button>
             <button type="button" class="icon-action" aria-label="Close payment history" title="Close payment history" onclick="closeBorrowerPaymentDetail()">&times;</button>
           </div>
         </div>
         ${
           rows.length
             ? `<div class="payment-history-list">
-                ${rows.map((payment) => `
+                ${rows.map((row) => `
                   <div class="payment-history-row">
                     <div class="payment-history-main">
-                      <div><strong>${escapeHtml(payment.date || "-")}</strong></div>
-                      <div class="payment-history-amount">${currency(payment.amount)}</div>
-                      <div>${escapeHtml(payment.method || "-")}</div>
+                      <div><strong>${escapeHtml(row.date || "-")}</strong></div>
+                      <div><span class="badge ${row.type === "Advance" ? "badge-active" : "badge-paid"}">${escapeHtml(row.type)}</span></div>
+                      <div class="payment-history-amount">${row.type === "Advance" ? "+" : "-"}${currency(row.amount)}</div>
+                      <div>${escapeHtml(row.method || "-")}</div>
                     </div>
-                    ${payment.notes ? `<div class="payment-history-notes small muted">${escapeHtml(payment.notes)}</div>` : ""}
+                    ${row.notes ? `<div class="payment-history-notes small muted">${escapeHtml(row.notes)}</div>` : ""}
                   </div>
                 `).join("")}
               </div>`
-            : `<div class="empty">No payments recorded for this borrower yet.</div>`
+            : `<div class="empty">No payment or advance activity recorded for this borrower yet.</div>`
         }
       `;
       card.classList.remove("hidden");
@@ -2154,6 +2207,20 @@
       switchTab("payments");
       toggleAddPaymentPanel(true);
       if (openLoan) document.getElementById("paymentLoan").value = openLoan.id;
+    }
+
+    function addAdvanceForBorrower(borrowerId) {
+      const openLoan = getLoansWithStats().find((loan) => loan.borrower_id === borrowerId && loan.balance > 0)
+        || getLoansWithStats().find((loan) => loan.borrower_id === borrowerId);
+      switchTab("payments");
+      toggleAddAdvancePanel(true);
+      if (openLoan) document.getElementById("advanceLoan").value = openLoan.id;
+    }
+
+    function addAdvanceForLoan(loanId) {
+      switchTab("payments");
+      toggleAddAdvancePanel(true);
+      document.getElementById("advanceLoan").value = loanId || "";
     }
 
     function renderBorrowers() {
@@ -2223,11 +2290,28 @@
       Object.keys(grouped).forEach((loanId) => {
         const loan = state.loans.find((l) => l.id === loanId);
         const principal = Number(loan?.principal || 0);
-        const asc = grouped[loanId].slice().sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")) || String(a.created_at || "").localeCompare(String(b.created_at || "")));
-        let paidSoFar = 0;
-        asc.forEach((p) => {
-          paidSoFar += Number(p.amount || 0);
-          runningBalanceMap[p.id] = Math.max(0, principal - paidSoFar);
+        const loanAdvances = state.advances.filter((advance) => advance.loan_id === loanId);
+        const openingRows = loanAdvances.length
+          ? loanAdvances.map((advance) => ({ ...advance, type: "advance" }))
+          : [{
+              id: `principal-${loanId}`,
+              date: loan?.start_date || "0000-00-00",
+              created_at: loan?.created_at || "",
+              type: "advance",
+              amount: principal
+            }];
+        const activity = openingRows
+          .concat(grouped[loanId].map((payment) => ({ ...payment, type: "payment" })))
+          .sort((a, b) =>
+            String(a.date || "").localeCompare(String(b.date || "")) ||
+            String(a.created_at || "").localeCompare(String(b.created_at || "")) ||
+            (a.type === "advance" ? -1 : 1)
+          );
+        let balance = 0;
+        activity.forEach((row) => {
+          if (row.type === "advance") balance += Number(row.amount || 0);
+          else balance -= Number(row.amount || 0);
+          if (row.type === "payment") runningBalanceMap[row.id] = Math.max(0, balance);
         });
       });
 
@@ -2285,12 +2369,17 @@
 
     function renderLoanOptions() {
       const addPaymentSelect = document.getElementById("paymentLoan");
+      const addAdvanceSelect = document.getElementById("advanceLoan");
       const editPaymentLoan = document.getElementById("editPaymentLoan");
       const openLoans = getLoansWithStats().filter((l) => l.balance > 0);
       const allLoans = getLoansWithStats();
 
       addPaymentSelect.innerHTML = '<option value="">Select loan</option>' + openLoans.map((l) => `
         <option value="${l.id}">${escapeHtml(l.borrower?.name || "Unknown")} - ${currency(l.balance)} due</option>
+      `).join("");
+
+      addAdvanceSelect.innerHTML = '<option value="">Select loan</option>' + allLoans.map((l) => `
+        <option value="${l.id}">${escapeHtml(l.borrower?.name || "Unknown")} - ${currency(l.balance)} balance</option>
       `).join("");
 
       editPaymentLoan.innerHTML = '<option value="">Select loan</option>' + allLoans.map((l) => `
@@ -2650,6 +2739,8 @@
     window.showBorrowerPaymentDetail = showBorrowerPaymentDetail;
     window.closeBorrowerPaymentDetail = closeBorrowerPaymentDetail;
     window.addPaymentForBorrower = addPaymentForBorrower;
+    window.addAdvanceForBorrower = addAdvanceForBorrower;
+    window.addAdvanceForLoan = addAdvanceForLoan;
     window.toggleBorrowerCardEdit = toggleBorrowerCardEdit;
     window.saveBorrowerCard = saveBorrowerCard;
     window.createBorrowerPortalUser = createBorrowerPortalUser;
@@ -2867,10 +2958,27 @@
       if (closePanel) toggleAddPaymentPanel(false);
     }
 
+    function toggleAddAdvancePanel(show = true) {
+      document.getElementById("addAdvancePanel").classList.toggle("hidden", !show);
+      document.getElementById("showAddAdvanceBtn").classList.toggle("hidden", show);
+      if (show) document.getElementById("advanceLoan").focus();
+    }
+
+    function clearAddAdvanceForm(closePanel = false) {
+      document.getElementById("advanceLoan").value = "";
+      document.getElementById("advanceAmount").value = "";
+      document.getElementById("advanceDate").value = todayStr();
+      document.getElementById("advanceMethod").value = "Cash";
+      document.getElementById("advanceNotes").value = "";
+      if (closePanel) toggleAddAdvancePanel(false);
+    }
+
     document.getElementById("showAddLoanBtn").addEventListener("click", () => toggleAddLoanPanel(true));
     document.getElementById("cancelAddLoanBtn").addEventListener("click", clearAddLoanForm);
     document.getElementById("showAddPaymentBtn").addEventListener("click", () => toggleAddPaymentPanel(true));
     document.getElementById("cancelAddPaymentBtn").addEventListener("click", () => clearAddPaymentForm(true));
+    document.getElementById("showAddAdvanceBtn").addEventListener("click", () => toggleAddAdvancePanel(true));
+    document.getElementById("cancelAddAdvanceBtn").addEventListener("click", () => clearAddAdvanceForm(true));
 
     document.getElementById("addLoanBtn").addEventListener("click", async () => {
       const borrowerId = document.getElementById("loanBorrower").value;
@@ -2926,6 +3034,65 @@
 
       await loadAllData();
       showMessage("Loan added.");
+    });
+
+    document.getElementById("addAdvanceBtn").addEventListener("click", async () => {
+      const loanId = document.getElementById("advanceLoan").value;
+      const amount = document.getElementById("advanceAmount").value;
+      const date = document.getElementById("advanceDate").value || todayStr();
+      const method = document.getElementById("advanceMethod").value;
+      const notes = document.getElementById("advanceNotes").value.trim();
+
+      if (!loanId || !amount || Number(amount) <= 0) {
+        showMessage("Select a loan and enter the advance amount.");
+        return;
+      }
+
+      const loan = state.loans.find((item) => item.id === loanId);
+      const existingAdvances = state.advances.filter((advance) => advance.loan_id === loanId);
+      const rows = [];
+      if (!existingAdvances.length && loan && Number(loan.principal || 0) > 0) {
+        rows.push({
+          loan_id: loanId,
+          amount: Number(loan.principal || 0),
+          date: loan.start_date || date,
+          method: "-",
+          notes: "Original loan amount"
+        });
+      }
+      rows.push({
+        loan_id: loanId,
+        amount: Number(amount || 0),
+        date,
+        method,
+        notes
+      });
+
+      const { error } = await supabaseClient.from("loan_advances").insert(rows);
+
+      let principalUpdateError = null;
+      if (!error && !existingAdvances.length && loan && Number(loan.principal || 0) > 0) {
+        const result = await supabaseClient.from("loans").update({ principal: Number(loan.principal || 0) + Number(amount || 0) }).eq("id", loanId);
+        principalUpdateError = result.error;
+      } else if (!error) {
+        const stats = getLoansWithStats().find((item) => item.id === loanId);
+        const result = await supabaseClient.from("loans").update({ principal: Number(stats?.totalBorrowed || 0) + Number(amount || 0) }).eq("id", loanId);
+        principalUpdateError = result.error;
+      }
+
+      if (error) {
+        console.error(error);
+        showMessage("Could not add advance.");
+        return;
+      }
+      if (principalUpdateError) {
+        console.error(principalUpdateError);
+        showMessage("Advance added, but total principal could not be updated.");
+      }
+
+      clearAddAdvanceForm(true);
+      await loadAllData();
+      if (!principalUpdateError) showMessage("Advance added.");
     });
 
     document.getElementById("addPaymentBtn").addEventListener("click", async () => {
@@ -3220,6 +3387,7 @@
     document.getElementById("loanDueDate").value = nextMonthlyDueDate(1);
     document.getElementById("loanMonthlyDueDay").value = "1";
     document.getElementById("paymentDate").value = todayStr();
+    document.getElementById("advanceDate").value = todayStr();
 
     startStaffInactivityWatcher();
     startStaffApp();
