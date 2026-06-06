@@ -930,7 +930,7 @@
           <h3>Create Borrower</h3>
           <div class="field"><label>Name</label><input id="borrowerName" /></div>
           <div class="field"><label>Email</label><input id="borrowerEmail" /></div>
-          <div class="field"><label>Phone</label><input id="borrowerPhone" /></div>
+          <div class="field"><label>Phone</label><input id="borrowerPhone" type="tel" placeholder="+16505551234" /></div>
           <label class="small muted" style="display:flex;align-items:center;gap:8px;margin:0 0 14px;">
             <input id="borrowerTextOptIn" type="checkbox" style="width:auto;min-height:auto;" />
             Borrower agreed to receive Mango Loan payment texts
@@ -1069,7 +1069,7 @@
       </div>
     </section>
 
-    <p class="app-version">Mango Loan Admin v0.2.0</p>
+    <p class="app-version">Mango Loan Admin v0.2.1</p>
   </div>
   </div>
 
@@ -1768,6 +1768,16 @@
         .trim();
     }
 
+    function normalizePhone(phone) {
+      const trimmed = String(phone || "").trim();
+      if (!trimmed) return "";
+      if (trimmed.startsWith("+")) return "+" + trimmed.slice(1).replace(/\D/g, "");
+      const digits = trimmed.replace(/\D/g, "");
+      if (digits.length === 10) return "+1" + digits;
+      if (digits.length === 11 && digits.startsWith("1")) return "+" + digits;
+      return digits ? "+" + digits : "";
+    }
+
     function parseZelleText(text) {
       const clean = String(text || "").replace(/\s+/g, " ").trim();
       const match = clean.match(/BofA:\s*(.+?)\s+sent you\s+\$([\d,]+(?:\.\d{1,2})?)\s+for\s+[“\"](.+?)[”\"]/i);
@@ -2148,7 +2158,7 @@
               <button type="button" onclick="setBorrowerPortalPassword('${b.id}', this)" ${b.auth_user_id ? "" : "disabled"}>Set Temporary Password</button>
             </div>
             <p id="borrowerPortalUserResult-${b.id}" class="small muted hidden"></p>
-            <div class="field"><label>Phone</label><input id="borrowerEditPhone-${b.id}" value="${escapeHtml(b.phone || "")}" /></div>
+            <div class="field"><label>Phone</label><input id="borrowerEditPhone-${b.id}" type="tel" placeholder="+16505551234" value="${escapeHtml(b.phone || "")}" /></div>
             <label class="small muted" style="display:flex;align-items:center;gap:8px;margin:0 0 14px;">
               <input id="borrowerEditTextOptIn-${b.id}" type="checkbox" ${b.text_opt_in ? "checked" : ""} style="width:auto;min-height:auto;" />
               Borrower agreed to receive Mango Loan payment texts
@@ -2314,7 +2324,7 @@
         name: borrowerCardField(id, "Name").value.trim(),
         email: borrowerCardField(id, "Email").value.trim(),
         auth_user_id: borrowerCardField(id, "AuthUserId").value.trim() || null,
-        phone: borrowerCardField(id, "Phone").value.trim(),
+        phone: normalizePhone(borrowerCardField(id, "Phone").value),
         text_opt_in: textOptIn,
         text_opt_in_at: textOptIn && !borrower?.text_opt_in ? new Date().toISOString() : borrower?.text_opt_in_at || null,
         text_opt_out_at: !textOptIn && borrower?.text_opt_in ? new Date().toISOString() : borrower?.text_opt_out_at || null,
@@ -2711,7 +2721,7 @@
     document.getElementById("addBorrowerBtn").addEventListener("click", async () => {
       const name = document.getElementById("borrowerName").value.trim();
       const email = document.getElementById("borrowerEmail").value.trim();
-      const phone = document.getElementById("borrowerPhone").value.trim();
+      const phone = normalizePhone(document.getElementById("borrowerPhone").value);
       const textOptIn = document.getElementById("borrowerTextOptIn").checked;
       const zelle = document.getElementById("borrowerZelle").value.trim();
       const notes = document.getElementById("borrowerNotes").value.trim();
