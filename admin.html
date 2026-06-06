@@ -1718,7 +1718,23 @@
     };
 
     function todayStr() {
-      return new Date().toISOString().slice(0, 10);
+      return dateInputValue(new Date());
+    }
+
+    function dateInputValue(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function nextMonthlyDueDate(day = 1) {
+      const today = new Date();
+      const due = new Date(today.getFullYear(), today.getMonth(), day);
+      if (due < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        due.setMonth(due.getMonth() + 1);
+      }
+      return dateInputValue(due);
     }
 
     function currency(n) {
@@ -2811,9 +2827,9 @@
       document.getElementById("loanPrincipal").value = "";
       document.getElementById("loanRate").value = "";
       document.getElementById("loanStartDate").value = todayStr();
-      document.getElementById("loanDueDate").value = "";
+      document.getElementById("loanDueDate").value = nextMonthlyDueDate(1);
       document.getElementById("loanTextRemindersEnabled").checked = true;
-      document.getElementById("loanMonthlyDueDay").value = "";
+      document.getElementById("loanMonthlyDueDay").value = "1";
       document.getElementById("loanDueReminderDaysBefore").value = "3";
       document.getElementById("loanLateReminderDaysAfter").value = "3";
       document.getElementById("loanNotes").value = "";
@@ -3184,6 +3200,8 @@
     });
 
     document.getElementById("loanStartDate").value = todayStr();
+    document.getElementById("loanDueDate").value = nextMonthlyDueDate(1);
+    document.getElementById("loanMonthlyDueDay").value = "1";
     document.getElementById("paymentDate").value = todayStr();
 
     startStaffInactivityWatcher();
