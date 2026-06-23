@@ -1095,7 +1095,10 @@
             </select>
           </div>
           <div class="field"><label>Notes</label><textarea id="editPaymentNotes"></textarea></div>
-          <button id="savePaymentEditBtn" class="primary">Save Payment</button>
+          <div class="actions payment-form-actions">
+            <button id="savePaymentEditBtn" class="primary">Save Payment</button>
+            <button id="closePaymentEditBtn" type="button">Back to Payments</button>
+          </div>
         </div>
       </div>
     </section>
@@ -2632,6 +2635,7 @@
 
     function editBorrower(id) { switchTab("borrowers"); toggleBorrowerCardEdit(id, true); }
     function editLoan(id) { setEditType("loan"); loadLoanIntoEditor(id); switchTab("edit"); }
+    function closePaymentEditor() { switchTab("payments"); }
     function editPayment(id) { setEditType("payment"); loadPaymentIntoEditor(id); switchTab("edit"); }
 
     function buildReceiptForPayment(paymentId) {
@@ -2765,6 +2769,7 @@
     document.getElementById("editTypeSelect").addEventListener("change", (e) => setEditType(e.target.value));
     document.getElementById("editLoanSelect").addEventListener("change", (e) => loadLoanIntoEditor(e.target.value));
     document.getElementById("editPaymentSelect").addEventListener("change", (e) => loadPaymentIntoEditor(e.target.value));
+    document.getElementById("closePaymentEditBtn").addEventListener("click", closePaymentEditor);
 
     document.getElementById("saveLoanEditBtn").addEventListener("click", async () => {
       const id = document.getElementById("editLoanSelect").value;
@@ -2817,6 +2822,7 @@
 
       await loadAllData();
       loadPaymentIntoEditor(id);
+      switchTab("payments");
       showMessage("Payment updated.");
     });
 
