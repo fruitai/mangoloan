@@ -2576,6 +2576,7 @@
               <div class="row-actions">
                 <button onclick="editPayment('${p.id}')">Edit</button>
                 <button onclick="showReceiptForPayment('${p.id}')">Receipt</button>
+                <button class="danger-link" onclick="deletePayment('${p.id}')">Delete</button>
               </div>
             </td>
           </tr>
@@ -2974,6 +2975,48 @@
       showMessage("Loan deleted.");
     }
 
+    async function deletePayment(paymentId) {
+      const payment = state.payments.find((x) => x.id === paymentId);
+      if (!payment) {
+        showMessage("Could not find that payment. Refresh and try again.");
+        return;
+      }
+
+      const loan = state.loans.find((x) => x.id === payment.loan_id);
+      const borrower = state.borrowers.find((x) => x.id === loan?.borrower_id);
+      const borrowerName = borrower?.name || "this borrower";
+      const paymentDate = payment.date || "no date";
+      const paymentAmount = currency(payment.amount);
+      const ok = window.confirm(
+        `Delete ${paymentAmount} payment for ${borrowerName} on ${paymentDate}? This action cannot be undone from the app.`
+      );
+      if (!ok) return;
+
+      try {
+        const { error } = await withTimeout(
+          supabaseClient.from("payments").delete().eq("id", paymentId),
+          30000,
+          "Payment delete timed out. Check connection and refresh to confirm whether it was deleted."
+        );
+        if (error) {
+          console.error(error);
+          showMessage("Could not delete payment: " + (error.message || "unknown error"));
+          return;
+        }
+
+        if (state.currentReceipt?.paymentId === paymentId) {
+          state.currentReceipt = null;
+          document.getElementById("receiptCard").classList.add("hidden");
+        }
+
+        await loadAllData();
+        showMessage("Payment deleted.");
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not delete payment.");
+      }
+    }
+
     window.editBorrower = editBorrower;
     window.showBorrowerPaymentDetail = showBorrowerPaymentDetail;
     window.closeBorrowerPaymentDetail = closeBorrowerPaymentDetail;
@@ -2988,6 +3031,7 @@
     window.editLoan = editLoan;
     window.editPayment = editPayment;
     window.deleteLoan = deleteLoan;
+    window.deletePayment = deletePayment;
     window.showReceiptForPayment = showReceiptForPayment;
 
     document.querySelectorAll(".tab-btn").forEach((btn) => {
