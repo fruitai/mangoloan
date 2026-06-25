@@ -1145,6 +1145,17 @@
       });
     }
 
+    function setButtonBusy(btn, busyText) {
+      if (!btn) return function () {};
+      var oldText = btn.textContent;
+      btn.disabled = true;
+      if (busyText) btn.textContent = busyText;
+      return function () {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      };
+    }
+
     var staffPasswordRecoveryActive = false;
     var staffDashboardAllowedUserId = null;
     var staffPendingMfaSession = null;
@@ -2006,25 +2017,31 @@
         return;
       }
 
-      const { data: borrowers, error: borrowerError } = await supabaseClient
-        .from("borrowers")
-        .select("*")
-        .order("created_at", { ascending: false });
+      let borrowersResult;
+      let loansResult;
+      let paymentsResult;
+      let advancesResult;
+      try {
+        [borrowersResult, loansResult, paymentsResult, advancesResult] = await withTimeout(
+          Promise.all([
+            supabaseClient.from("borrowers").select("*").order("created_at", { ascending: false }),
+            supabaseClient.from("loans").select("*").order("created_at", { ascending: false }),
+            supabaseClient.from("payments").select("*").order("created_at", { ascending: false }),
+            supabaseClient.from("loan_advances").select("*").order("created_at", { ascending: false })
+          ]),
+          30000,
+          "Database refresh timed out. The last save may have worked; refresh the page to reload."
+        );
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not refresh database data.");
+        return;
+      }
 
-      const { data: loans, error: loanError } = await supabaseClient
-        .from("loans")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      const { data: payments, error: paymentError } = await supabaseClient
-        .from("payments")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      const { data: advances, error: advanceError } = await supabaseClient
-        .from("loan_advances")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data: borrowers, error: borrowerError } = borrowersResult;
+      const { data: loans, error: loanError } = loansResult;
+      const { data: payments, error: paymentError } = paymentsResult;
+      const { data: advances, error: advanceError } = advancesResult;
 
       if (borrowerError || loanError || paymentError || advanceError) {
         const err = borrowerError || loanError || paymentError || advanceError;
@@ -2264,7 +2281,7 @@
             <div class="field"><label>Zelle</label><input id="borrowerEditZelle-${b.id}" value="${escapeHtml(b.zelle || "")}" /></div>
             <div class="field"><label>Notes</label><textarea id="borrowerEditNotes-${b.id}">${escapeHtml(b.notes || "")}</textarea></div>
             <div class="row-actions">
-              <button type="button" class="primary" onclick="saveBorrowerCard('${b.id}')">Save Borrower</button>
+              <button type="button" class="primary" onclick="saveBorrowerCard('${b.id}', this)">Save Borrower</button>
               <button type="button" onclick="toggleBorrowerCardEdit('${b.id}', false)">Cancel</button>
             </div>
           </div>
@@ -2436,7 +2453,7 @@
       editor.classList.toggle("hidden", !shouldShow);
     }
 
-    async function saveBorrowerCard(id) {
+    async function saveBorrowerCard(id, btn) {
       if (!id) return;
       const borrower = state.borrowers.find((b) => b.id === id);
       const textOptIn = document.getElementById(`borrowerEditTextOptIn-${id}`)?.checked || false;
@@ -2452,15 +2469,27 @@
         notes: borrowerCardField(id, "Notes").value.trim()
       };
 
-      const { error } = await supabaseClient.from("borrowers").update(payload).eq("id", id);
-      if (error) {
-        console.error(error);
-        showMessage("Could not update borrower.");
-        return;
-      }
+      const resetButton = setButtonBusy(btn || window.event?.currentTarget, "Saving...");
+      try {
+        const { error } = await withTimeout(
+          supabaseClient.from("borrowers").update(payload).eq("id", id),
+          30000,
+          "Borrower save timed out. Check connection and refresh to confirm whether it saved."
+        );
+        if (error) {
+          console.error(error);
+          showMessage("Could not update borrower: " + (error.message || "unknown error"));
+          return;
+        }
 
-      await loadAllData();
-      showMessage("Borrower updated.");
+        await loadAllData();
+        showMessage("Borrower updated.");
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not update borrower.");
+      } finally {
+        resetButton();
+      }
     }
 
     async function invokeBorrowerPortalUser(id, email, action = "create-user") {
@@ -2674,13 +2703,17 @@
     async function sendReceiptText(receipt) {
       if (!receipt?.textTo) throw new Error("Borrower phone is required before sending a receipt text.");
       if (!receipt?.textOptIn) throw new Error("Borrower has not opted in to Mango Loan texts.");
-      const { data, error } = await supabaseClient.functions.invoke("send-payment-receipt", {
-        body: {
-          phone: receipt.textTo,
-          message: receipt.textBody,
-          paymentId: receipt.paymentId
-        }
-      });
+      const { data, error } = await withTimeout(
+        supabaseClient.functions.invoke("send-payment-receipt", {
+          body: {
+            phone: receipt.textTo,
+            message: receipt.textBody,
+            paymentId: receipt.paymentId
+          }
+        }),
+        30000,
+        "Receipt text timed out. Payment was saved; text may not have sent."
+      );
       if (error || data?.error) {
         throw new Error(data?.error || error?.message || "Could not send receipt text.");
       }
@@ -2774,6 +2807,7 @@
     document.getElementById("saveLoanEditBtn").addEventListener("click", async () => {
       const id = document.getElementById("editLoanSelect").value;
       if (!id) return;
+      const resetButton = setButtonBusy(document.getElementById("saveLoanEditBtn"), "Saving...");
 
       const payload = {
         borrower_id: document.getElementById("editLoanBorrower").value,
@@ -2789,21 +2823,33 @@
         notes: document.getElementById("editLoanNotes").value.trim()
       };
 
-      const { error } = await supabaseClient.from("loans").update(payload).eq("id", id);
-      if (error) {
-        console.error(error);
-        showMessage("Could not update loan.");
-        return;
-      }
+      try {
+        const { error } = await withTimeout(
+          supabaseClient.from("loans").update(payload).eq("id", id),
+          30000,
+          "Loan save timed out. Check connection and refresh to confirm whether it saved."
+        );
+        if (error) {
+          console.error(error);
+          showMessage("Could not update loan: " + (error.message || "unknown error"));
+          return;
+        }
 
-      await loadAllData();
-      loadLoanIntoEditor(id);
-      showMessage("Loan updated.");
+        await loadAllData();
+        loadLoanIntoEditor(id);
+        showMessage("Loan updated.");
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not update loan.");
+      } finally {
+        resetButton();
+      }
     });
 
     document.getElementById("savePaymentEditBtn").addEventListener("click", async () => {
       const id = document.getElementById("editPaymentSelect").value;
       if (!id) return;
+      const resetButton = setButtonBusy(document.getElementById("savePaymentEditBtn"), "Saving...");
 
       const payload = {
         loan_id: document.getElementById("editPaymentLoan").value,
@@ -2813,17 +2859,28 @@
         notes: document.getElementById("editPaymentNotes").value.trim()
       };
 
-      const { error } = await supabaseClient.from("payments").update(payload).eq("id", id);
-      if (error) {
-        console.error(error);
-        showMessage("Could not update payment.");
-        return;
-      }
+      try {
+        const { error } = await withTimeout(
+          supabaseClient.from("payments").update(payload).eq("id", id),
+          30000,
+          "Payment save timed out. Check connection and refresh to confirm whether it saved."
+        );
+        if (error) {
+          console.error(error);
+          showMessage("Could not update payment: " + (error.message || "unknown error"));
+          return;
+        }
 
-      await loadAllData();
-      loadPaymentIntoEditor(id);
-      switchTab("payments");
-      showMessage("Payment updated.");
+        await loadAllData();
+        loadPaymentIntoEditor(id);
+        switchTab("payments");
+        showMessage("Payment updated.");
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not update payment.");
+      } finally {
+        resetButton();
+      }
     });
 
     function toggleAddBorrowerPanel(show = true) {
@@ -3000,6 +3057,7 @@
         showMessage("Select a borrower and enter principal.");
         return;
       }
+      const resetButton = setButtonBusy(document.getElementById("addLoanBtn"), "Adding...");
 
       const payload = {
         borrower_id: borrowerId,
@@ -3017,29 +3075,36 @@
 
       console.log("Trying to insert loan:", payload);
 
-      const { data, error } = await supabaseClient
-        .from("loans")
-        .insert([payload])
-        .select();
-
-      if (error) {
-        console.error("Loan insert error:", error);
-        alert(
-          "Could not add loan.\n\n" +
-          "Message: " + (error.message || "") + "\n" +
-          "Code: " + (error.code || "") + "\n" +
-          "Details: " + (error.details || "") + "\n" +
-          "Hint: " + (error.hint || "")
+      try {
+        const { data, error } = await withTimeout(
+          supabaseClient.from("loans").insert([payload]).select(),
+          30000,
+          "Loan add timed out. Check connection and refresh to confirm whether it saved."
         );
-        return;
+        if (error) {
+          console.error("Loan insert error:", error);
+          alert(
+            "Could not add loan.\n\n" +
+            "Message: " + (error.message || "") + "\n" +
+            "Code: " + (error.code || "") + "\n" +
+            "Details: " + (error.details || "") + "\n" +
+            "Hint: " + (error.hint || "")
+          );
+          return;
+        }
+
+        console.log("Loan inserted:", data);
+
+        clearAddLoanForm();
+
+        await loadAllData();
+        showMessage("Loan added.");
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not add loan.");
+      } finally {
+        resetButton();
       }
-
-      console.log("Loan inserted:", data);
-
-      clearAddLoanForm();
-
-      await loadAllData();
-      showMessage("Loan added.");
     });
 
     document.getElementById("addAdvanceBtn").addEventListener("click", async () => {
@@ -3120,45 +3185,57 @@
         if (!ok) return;
       }
 
-      const { data, error } = await supabaseClient.from("payments").insert([
-        {
-          loan_id: loanId,
-          amount: Number(amount || 0),
-          date,
-          method,
-          notes
+      const resetButton = setButtonBusy(document.getElementById("addPaymentBtn"), "Adding...");
+      try {
+        const { data, error } = await withTimeout(
+          supabaseClient.from("payments").insert([
+            {
+              loan_id: loanId,
+              amount: Number(amount || 0),
+              date,
+              method,
+              notes
+            }
+          ]).select(),
+          30000,
+          "Payment add timed out. Check connection and refresh to confirm whether it saved."
+        );
+
+        if (error) {
+          console.error(error);
+          showMessage("Could not add payment: " + (error.message || "unknown error"));
+          return;
         }
-      ]).select();
 
-      if (error) {
-        console.error(error);
-        showMessage("Could not add payment.");
-        return;
-      }
+        const newPayment = data && data[0] ? data[0] : null;
 
-      const newPayment = data && data[0] ? data[0] : null;
+        clearAddPaymentForm(true);
 
-      clearAddPaymentForm(true);
-
-      await loadAllData();
-      if (newPayment) {
-        showReceiptForPayment(newPayment.id);
-        const receipt = buildReceiptForPayment(newPayment.id);
-        if (receipt?.textOptIn && receipt?.textTo) {
-          try {
-            await sendReceiptText(receipt);
-            await loadAllData();
-            showReceiptForPayment(newPayment.id);
-            showMessage("Payment added and receipt text sent.");
-            return;
-          } catch (e) {
-            console.warn("Receipt text failed:", e);
-            showMessage("Payment added. Receipt text not sent: " + ((e && e.message) || "check Twilio setup."));
-            return;
+        await loadAllData();
+        if (newPayment) {
+          showReceiptForPayment(newPayment.id);
+          const receipt = buildReceiptForPayment(newPayment.id);
+          if (receipt?.textOptIn && receipt?.textTo) {
+            try {
+              await sendReceiptText(receipt);
+              await loadAllData();
+              showReceiptForPayment(newPayment.id);
+              showMessage("Payment added and receipt text sent.");
+              return;
+            } catch (e) {
+              console.warn("Receipt text failed:", e);
+              showMessage("Payment added. Receipt text not sent: " + ((e && e.message) || "check Twilio setup."));
+              return;
+            }
           }
         }
+        showMessage("Payment added.");
+      } catch (e) {
+        console.error(e);
+        showMessage((e && e.message) || "Could not add payment.");
+      } finally {
+        resetButton();
       }
-      showMessage("Payment added.");
     });
 
     document.getElementById("previewZelleBtn").addEventListener("click", previewZelleText);
