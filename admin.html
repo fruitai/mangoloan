@@ -614,6 +614,208 @@
       text-align: center;
     }
 
+    @media (min-width: 1025px) {
+      body {
+        background: #f6f8f4;
+      }
+
+      .container {
+        max-width: 1280px;
+        padding: 28px 28px 44px;
+      }
+
+      .card {
+        border-color: #e4eadf;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.045);
+      }
+
+      .card.hero {
+        color: var(--text);
+        background: #ffffff;
+        border: 1px solid #e4eadf;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055);
+        padding: 20px 22px;
+      }
+
+      .card.hero.topbar {
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .hero-main {
+        align-items: center;
+        gap: 22px;
+      }
+
+      .hero .muted,
+      .hero-description {
+        color: #647064;
+      }
+
+      .hero-description {
+        margin-top: 8px;
+        max-width: 820px;
+      }
+
+      .brand-heading {
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 118px;
+        height: 52px;
+        border-radius: 12px;
+        border-color: #e4eadf;
+        box-shadow: none;
+      }
+
+      .brand-mark img {
+        width: 106px;
+      }
+
+      h1 {
+        font-size: 28px;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      .hero .top-actions {
+        gap: 8px;
+        padding: 6px;
+        border: 1px solid #e4eadf;
+        border-radius: 14px;
+        background: #f8faf6;
+      }
+
+      .hero .top-actions .nav-separator {
+        display: none;
+      }
+
+      .hero .top-actions > .nav-link {
+        min-height: 34px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        color: #3f4d42;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .hero .top-actions > .nav-link:hover,
+      .hero .top-actions > .nav-link.active {
+        background: #ffffff;
+        color: #0f7a3b;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+        text-decoration: none;
+      }
+
+      .stats {
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .stats .card {
+        background: #ffffff;
+        padding: 16px 18px;
+      }
+
+      .stat-label {
+        color: #657064;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+
+      .stat-value {
+        font-size: 26px;
+        letter-spacing: 0;
+      }
+
+      button,
+      .file-label,
+      input,
+      select,
+      textarea {
+        border-color: #dfe7dc;
+        border-radius: 10px;
+      }
+
+      button.primary {
+        background: #132018;
+        color: #ffffff;
+        border-color: #132018;
+        box-shadow: none;
+      }
+
+      button:hover,
+      .file-label:hover {
+        transform: none;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+      }
+
+      .wide-add-button {
+        justify-content: flex-start;
+      }
+
+      .toolbar {
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 14px;
+      }
+
+      .search {
+        max-width: 420px;
+      }
+
+      .table-wrap {
+        padding: 0;
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      th,
+      td {
+        padding: 13px 16px;
+        border-bottom-color: #eef2ea;
+        font-size: 13px;
+      }
+
+      th {
+        color: #657064;
+        font-size: 12px;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        background: #fbfcfa;
+      }
+
+      tbody tr:hover {
+        background: #fbfcfa;
+      }
+
+      .badge {
+        border-radius: 8px;
+      }
+
+      .borrower-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .borrower-detail-card {
+        background: #ffffff;
+      }
+
+      .message {
+        border-radius: 10px;
+      }
+    }
+
     @media (max-width: 1024px) {
       .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .grid-3, .borrower-grid { grid-template-columns: 1fr; }
@@ -1103,7 +1305,7 @@
       </div>
     </section>
 
-    <p class="app-version">Mango Loan Admin v0.2.1</p>
+    <p class="app-version">Mango Loan Admin v0.2.2</p>
   </div>
   </div>
 
