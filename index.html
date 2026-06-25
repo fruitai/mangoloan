@@ -88,6 +88,8 @@
 
     .section { margin-top: 18px; }
     .section-title { margin: 0 0 12px; font-size: 22px; letter-spacing: -.03em; }
+    .access-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .access-card { min-height: 154px; display: flex; flex-direction: column; justify-content: space-between; }
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .card { background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: 0 10px 28px rgba(180, 83, 9, 0.08); }
     .card h2 { margin: 0 0 8px; font-size: 20px; letter-spacing:-.02em; }
@@ -101,10 +103,12 @@
     a.cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 14px; font-size: 14px; font-weight: 700; text-decoration: none; border: 1px solid var(--line); background: white; color: var(--text); transition: 0.15s ease; }
     a.cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08); }
     a.cta.primary { background: linear-gradient(135deg, var(--accent), var(--accent-green)); color: #132018; border-color: var(--accent); box-shadow: 0 8px 20px rgba(255, 183, 3, 0.24); }
+    .public-info { margin-top: 30px; }
     .footer-note { margin-top: 24px; font-size: 13px; color: var(--muted); line-height: 1.5; }
     .footer-note a { color: var(--accent-dark); font-weight: 700; }
     @media (max-width: 720px) {
       .container { padding-top: 18px; }
+      .access-actions,
       .cards { grid-template-columns: 1fr; }
       .hero { border-radius: 22px; }
     }
@@ -125,6 +129,27 @@
     </section>
 
     <section class="section">
+      <h2 class="section-title">Account Access</h2>
+      <div class="access-actions">
+        <div class="card access-card">
+          <div>
+            <h2>Borrower portal</h2>
+            <p>Borrowers can sign in to view borrowed amounts, payments, due date, and balance.</p>
+          </div>
+          <a class="cta primary" href="borrower.html">Open borrower portal</a>
+        </div>
+
+        <div class="card access-card">
+          <div>
+            <h2>Admin dashboard</h2>
+            <p>Create borrowers, manage loans, record payments, and review balances.</p>
+          </div>
+          <a class="cta" href="admin.html">Open admin dashboard</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section public-info">
       <h2 class="section-title">Public Business Information</h2>
       <div class="cards">
         <div class="card">
@@ -148,29 +173,9 @@
           </ul>
         </div>
       </div>
-    </section>
-
-    <section class="section">
-      <h2 class="section-title">Account Access</h2>
-      <div class="cards">
-      <div class="card">
-        <h2>Admin dashboard</h2>
-        <p>Create borrowers, manage loans, record payments, and review balances.</p>
-        <a class="cta" href="admin.html">Open admin dashboard</a>
-      </div>
-
-      <div class="card">
-        <h2>Borrower portal</h2>
-        <p>Borrowers can sign in to view borrowed amounts, payments, due date, and balance.</p>
-        <a class="cta" href="borrower.html">Open borrower portal</a>
-      </div>
-
-      <div class="card">
-        <h2>SMS consent</h2>
-        <p>Public SMS consent and opt-out details for Twilio toll-free verification.</p>
-        <a class="cta" href="sms-consent.html">View SMS consent page</a>
-      </div>
-      </div>
+      <p class="footer-note">
+        SMS consent and opt-out details are available on the <a href="sms-consent.html">Mango Loan SMS consent page</a>.
+      </p>
     </section>
 
     <p class="footer-note">
