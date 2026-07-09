@@ -104,8 +104,27 @@
     a.cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08); }
     a.cta.primary { background: linear-gradient(135deg, var(--accent), var(--accent-green)); color: #132018; border-color: var(--accent); box-shadow: 0 8px 20px rgba(255, 183, 3, 0.24); }
     .public-info { margin-top: 30px; }
+    .compliance-info { margin-top: 34px; }
+    .compliance-card { padding: 16px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.045); }
+    .compliance-card h2 { font-size: 16px; }
+    .compliance-card .meta-list { gap: 8px; }
+    .compliance-card .meta-list li { padding: 10px 12px; }
+    .compliance-card .footer-note { margin-top: 14px; }
     .footer-note { margin-top: 24px; font-size: 13px; color: var(--muted); line-height: 1.5; }
     .footer-note a { color: var(--accent-dark); font-weight: 700; }
+    @media (min-width: 1025px) {
+      body { background: #f6f8f4; }
+      .container { max-width: 1280px; padding: 28px 28px 44px; }
+      .hero { color: var(--text); background:#ffffff; border:1px solid #e4eadf; border-radius:12px; box-shadow:0 12px 32px rgba(15,23,42,.055); padding:28px; }
+      .lead { color:#647064; }
+      .logo-mark { width:118px; height:52px; border-radius:12px; border-color:#e4eadf; box-shadow:none; }
+      .logo-mark img { width:106px; }
+      h1 { font-size:42px; letter-spacing:0; }
+      .card { border-color:#e4eadf; border-radius:12px; box-shadow:0 8px 24px rgba(15,23,42,.045); }
+      a.cta { border-radius:10px; }
+      a.cta.primary { background:#132018; color:#ffffff; border-color:#132018; box-shadow:none; }
+    }
+
     @media (max-width: 720px) {
       .container { padding-top: 18px; }
       .access-actions,
@@ -150,37 +169,36 @@
     </section>
 
     <section class="section public-info">
-      <h2 class="section-title">Public Business Information</h2>
-      <div class="cards">
-        <div class="card">
-          <h2>About Next HB</h2>
-          <p>Next HB uses Mango Loan as a private loan tracker. The site is used for loan recordkeeping, payment tracking, receipts, reminders, and account follow-up.</p>
-          <ul>
-            <li>Borrower loan balance tracking</li>
-            <li>Payment receipt confirmations</li>
-            <li>Payment reminder notifications</li>
-            <li>Account follow-up related to payments and balances</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <h2>Contact And SMS</h2>
-          <ul class="meta-list">
-            <li><strong>Business</strong>Next HB</li>
-            <li><strong>SMS Program</strong>Transactional borrower account messages through Mango Loan</li>
-            <li><strong>Phone Number</strong>+1 (833) 962-6701</li>
-            <li><strong>Website</strong>mangoloan.vercel.app</li>
-          </ul>
-        </div>
+      <h2 class="section-title">Mango Loan Information</h2>
+      <div class="card">
+        <h2>About Next HB</h2>
+        <p>Next HB uses Mango Loan as a private loan tracker. The site is used for loan recordkeeping, payment tracking, receipts, reminders, and account follow-up.</p>
+        <ul>
+          <li>Borrower loan balance tracking</li>
+          <li>Payment receipt confirmations</li>
+          <li>Payment reminder notifications</li>
+          <li>Account follow-up related to payments and balances</li>
+        </ul>
       </div>
-      <p class="footer-note">
-        SMS consent and opt-out details are available on the <a href="sms-consent.html">Mango Loan SMS consent page</a>.
-      </p>
     </section>
 
-    <p class="footer-note">
-      Next HB / Mango Loan SMS messages are transactional only and are not used for marketing. Borrowers may reply STOP to opt out or HELP for help. Message and data rates may apply.
-    </p>
+    <section class="section compliance-info">
+      <div class="card compliance-card">
+        <h2>Contact And SMS</h2>
+        <ul class="meta-list">
+          <li><strong>Business</strong>Next HB</li>
+          <li><strong>SMS Program</strong>Transactional borrower account messages through Mango Loan</li>
+          <li><strong>Phone Number</strong>+1 (833) 962-6701</li>
+          <li><strong>Website</strong>mangoloan.vercel.app</li>
+        </ul>
+        <p class="footer-note">
+          SMS consent and opt-out details are available on the <a href="sms-consent.html">Mango Loan SMS consent page</a>.
+        </p>
+        <p class="footer-note">
+          Next HB / Mango Loan SMS messages are transactional only and are not used for marketing. Borrowers may reply STOP to opt out or HELP for help. Message and data rates may apply.
+        </p>
+      </div>
+    </section>
   </div>
 </body>
 </html>

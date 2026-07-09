@@ -251,9 +251,74 @@
     }
 
     .hero .top-actions > .nav-link:hover,
-    .hero .top-actions > .nav-link.active {
+    .hero .top-actions > .nav-link.active,
+    .hero .more-menu-toggle:hover,
+    .hero .more-menu-toggle[aria-expanded="true"] {
       text-decoration: underline;
       text-underline-offset: 4px;
+    }
+
+    .more-menu {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    .more-menu-toggle {
+      width: auto;
+      min-height: auto;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: white;
+      box-shadow: none;
+      display: inline-flex;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: normal;
+      text-align: left;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .more-menu-panel {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 50;
+      min-width: 154px;
+      display: grid;
+      gap: 4px;
+      padding: 8px;
+      border: 1px solid #e4eadf;
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+    }
+
+    .more-menu-panel .nav-link {
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .more-menu-panel .nav-link:hover {
+      background: var(--soft);
+      color: var(--accent-dark);
+      text-decoration: none;
     }
 
     .danger-link {
@@ -695,7 +760,8 @@
         display: none;
       }
 
-      .hero .top-actions > .nav-link {
+      .hero .top-actions > .nav-link,
+      .hero .more-menu-toggle {
         min-height: 34px;
         padding: 8px 10px;
         border-radius: 10px;
@@ -885,9 +951,14 @@
       .hero .top-actions .nav-separator {
         display: inline;
       }
-      .hero .top-actions .nav-link {
+      .hero .top-actions .nav-link,
+      .hero .more-menu-toggle {
         flex: 0 0 auto;
         line-height: 1.3;
+      }
+      .more-menu-panel {
+        right: auto;
+        left: 0;
       }
       .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .stat-value { font-size: 23px; }
@@ -906,8 +977,93 @@
       .search { max-width: 100%; }
       .toolbar > * { width: 100%; max-width: 100% !important; }
       .card { padding: 16px; border-radius: 18px; }
-      th, td { padding: 12px 10px; }
-      table { min-width: 700px; }
+      #showAddLoanBtn,
+      #showAddBorrowerBtn,
+      #showAddPaymentBtn {
+        position: sticky;
+        top: 8px;
+        z-index: 24;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14);
+      }
+      #showAddLoanBtn.hidden,
+      #showAddBorrowerBtn.hidden,
+      #showAddPaymentBtn.hidden {
+        display: none !important;
+      }
+      .loan-entry-card,
+      .payment-entry-card,
+      #tab-borrowers > .card:first-child {
+        position: relative;
+        z-index: 22;
+      }
+      .table-wrap {
+        overflow: visible;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      .table-wrap table,
+      .table-wrap thead,
+      .table-wrap tbody,
+      .table-wrap tr,
+      .table-wrap td {
+        display: block;
+        width: 100%;
+      }
+      .table-wrap table {
+        min-width: 0;
+        background: transparent;
+      }
+      .table-wrap thead {
+        display: none;
+      }
+      .table-wrap tbody {
+        display: grid;
+        gap: 12px;
+      }
+      .table-wrap tr {
+        border: 1px solid #e4eadf;
+        border-radius: 14px;
+        background: #ffffff;
+        padding: 12px;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055);
+      }
+      .table-wrap td {
+        display: grid;
+        grid-template-columns: minmax(92px, .42fr) minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        border: 0;
+        padding: 8px 0;
+        font-size: 14px;
+      }
+      .table-wrap td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+      .table-wrap td.empty {
+        display: block;
+        padding: 14px;
+      }
+      .table-wrap td.empty::before {
+        content: none;
+      }
+      .table-wrap td[data-label="Actions"] {
+        display: block;
+      }
+      .table-wrap td[data-label="Actions"]::before {
+        display: block;
+        margin-bottom: 8px;
+      }
+      .row-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
       .row-actions button { min-height: 38px; padding: 9px 11px; }
       .row-actions .icon-action {
         flex: 0 0 40px;
@@ -1039,12 +1195,15 @@
           <span class="nav-separator" aria-hidden="true">|</span>
           <a href="#" class="nav-link tab-btn" data-tab="payments">Payments</a>
           <span class="nav-separator" aria-hidden="true">|</span>
-          <a href="#" id="importDataLink" class="nav-link">Import Data</a>
+          <div class="more-menu">
+            <button type="button" id="moreMenuBtn" class="nav-link more-menu-toggle" aria-haspopup="true" aria-expanded="false">More</button>
+            <div id="moreMenuPanel" class="more-menu-panel hidden">
+              <a href="#" id="importDataLink" class="nav-link">Import Data</a>
+              <a href="#" id="exportBtn" class="nav-link">Export Data</a>
+              <a href="#" id="signOutBtn" class="nav-link">Sign out</a>
+            </div>
+          </div>
           <input id="importFile" type="file" accept="application/json" class="hidden" />
-          <span class="nav-separator" aria-hidden="true">|</span>
-          <a href="#" id="exportBtn" class="nav-link">Export Data</a>
-          <span class="nav-separator" aria-hidden="true">|</span>
-          <a href="#" id="signOutBtn" class="nav-link">Sign out</a>
         </div>
       </div>
       <p class="muted hero-description">Manage borrowers, loans, payments, and balances in one place.</p>
@@ -2310,7 +2469,7 @@
 
         return `
           <tr>
-            <td>
+            <td data-label="Borrower">
               <div>
                 <button type="button" class="name-link" onclick="showBorrowerPaymentDetail('${loan.borrower_id || ""}')">
                   ${escapeHtml(loan.borrower?.name || "Unknown")}
@@ -2318,13 +2477,13 @@
               </div>
               <div class="small muted">${escapeHtml(loan.borrower?.zelle || loan.borrower?.phone || "")}</div>
             </td>
-            <td>${currency(loan.principal)}</td>
-            <td>${currency(loan.paid)}</td>
-            <td><strong>${currency(loan.balance)}</strong></td>
-            <td>${loan.monthlyPaymentAmount > 0 ? currency(loan.monthlyPaymentAmount) : "-"}</td>
-            <td>${escapeHtml(loan.due_date || "-")}</td>
-            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-            <td>
+            <td data-label="Principal">${currency(loan.principal)}</td>
+            <td data-label="Paid">${currency(loan.paid)}</td>
+            <td data-label="Balance"><strong>${currency(loan.balance)}</strong></td>
+            <td data-label="Monthly">${loan.monthlyPaymentAmount > 0 ? currency(loan.monthlyPaymentAmount) : "-"}</td>
+            <td data-label="Due">${escapeHtml(loan.due_date || "-")}</td>
+            <td data-label="Status"><span class="badge ${badgeClass}">${badgeText}</span></td>
+            <td data-label="Actions">
               <div class="row-actions">
                 <button onclick="addAdvanceForLoan('${loan.id}')">Advance</button>
                 <button onclick="editLoan('${loan.id}')">Edit</button>
@@ -2562,17 +2721,17 @@
             : "";
         return `
           <tr>
-            <td>${escapeHtml(p.date || "")}</td>
-            <td>${escapeHtml(p.borrower?.name || "Unknown")}</td>
-            <td>${loanLabel}</td>
-            <td>${escapeHtml(p.method || "")}</td>
-            <td>${currency(p.amount)}</td>
-            <td>${currency(runningBalanceMap[p.id] || 0)}</td>
-            <td>
+            <td data-label="Date">${escapeHtml(p.date || "")}</td>
+            <td data-label="Borrower">${escapeHtml(p.borrower?.name || "Unknown")}</td>
+            <td data-label="Loan">${loanLabel}</td>
+            <td data-label="Method">${escapeHtml(p.method || "")}</td>
+            <td data-label="Amount">${currency(p.amount)}</td>
+            <td data-label="Running Balance">${currency(runningBalanceMap[p.id] || 0)}</td>
+            <td data-label="Notes">
               ${escapeHtml(p.notes || "-")}
               ${textStatus ? `<div class="small muted">${escapeHtml(textStatus)}</div>` : ""}
             </td>
-            <td>
+            <td data-label="Actions">
               <div class="row-actions">
                 <button onclick="editPayment('${p.id}')">Edit</button>
                 <button onclick="showReceiptForPayment('${p.id}')">Receipt</button>
@@ -3034,11 +3193,34 @@
     window.deletePayment = deletePayment;
     window.showReceiptForPayment = showReceiptForPayment;
 
+    function closeMoreMenu() {
+      const moreBtn = document.getElementById("moreMenuBtn");
+      const morePanel = document.getElementById("moreMenuPanel");
+      if (!moreBtn || !morePanel) return;
+      moreBtn.setAttribute("aria-expanded", "false");
+      morePanel.classList.add("hidden");
+    }
+
     document.querySelectorAll(".tab-btn").forEach((btn) => {
       btn.addEventListener("click", (event) => {
         event.preventDefault();
+        closeMoreMenu();
         switchTab(btn.dataset.tab);
       });
+    });
+
+    document.getElementById("moreMenuBtn")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const moreBtn = document.getElementById("moreMenuBtn");
+      const morePanel = document.getElementById("moreMenuPanel");
+      const isOpen = moreBtn.getAttribute("aria-expanded") === "true";
+      moreBtn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+      morePanel.classList.toggle("hidden", isOpen);
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".more-menu")) closeMoreMenu();
     });
 
     document.getElementById("searchInput").addEventListener("input", renderLoans);
@@ -3489,6 +3671,7 @@
 
     document.getElementById("exportBtn").addEventListener("click", (event) => {
       event.preventDefault();
+      closeMoreMenu();
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -3500,6 +3683,7 @@
 
     document.getElementById("importDataLink").addEventListener("click", (event) => {
       event.preventDefault();
+      closeMoreMenu();
       document.getElementById("importFile").click();
     });
 
@@ -3686,6 +3870,7 @@
     });
 
     document.getElementById("staffGateSignOutBtn").addEventListener("click", async () => {
+      closeMoreMenu();
       clearStaffDashboardAuth();
       await supabaseClient.auth.signOut();
       showStaffAuthGate("");
@@ -3707,6 +3892,7 @@
 
     document.getElementById("signOutBtn").addEventListener("click", async (event) => {
       event.preventDefault();
+      closeMoreMenu();
       clearStaffDashboardAuth();
       await supabaseClient.auth.signOut();
       window.location.href = "index.html";
