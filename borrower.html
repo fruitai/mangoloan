@@ -32,8 +32,15 @@
     }
     .wrap { max-width: 1180px; margin: 0 auto; padding:20px; padding-bottom:40px; }
     .topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:18px; box-shadow:0 14px 34px rgba(34,197,94,.10); }
-    .card.hero { color:var(--text); background:#ffffff; border:1px solid #e5f0df; box-shadow:0 12px 30px rgba(15,83,45,.07); }
+    .card { background:var(--card); border:1px solid #e5f0df; border-radius:22px; padding:18px; box-shadow:0 10px 28px rgba(15,83,45,.055); }
+    .card.hero {
+      color:var(--text);
+      background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(100deg, rgba(255, 183, 3, 0.55), rgba(34, 197, 94, 0.46)) border-box;
+      border:1px solid transparent;
+      box-shadow:0 12px 30px rgba(15,83,45,.07);
+    }
     .card.hero.topbar { row-gap:0; }
     .hero .muted { color:#5f6f63; }
     .hero-main { width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
@@ -43,6 +50,58 @@
     .hero .top-actions .nav-separator { color:#a6b5a4; font-weight:700; }
     .hero .top-actions .nav-link { width:auto; min-height:auto; margin:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--accent-dark); box-shadow:none; display:inline; font-family:inherit; font-size:14px; font-weight:800; line-height:normal; text-align:left; text-decoration:none; white-space:nowrap; cursor:pointer; appearance:none; -webkit-appearance:none; }
     .hero .top-actions .nav-link:hover { text-decoration:underline; }
+    .account-menu { position:relative; display:inline-flex; align-items:center; flex:0 0 auto; }
+    .account-menu-toggle {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:38px;
+      padding:8px 12px;
+      border:1px solid #dfeadb;
+      border-radius:999px;
+      background:#ffffff;
+      color:var(--accent-dark);
+      box-shadow:0 6px 16px rgba(15,83,45,.08);
+      font-size:14px;
+      font-weight:800;
+      line-height:1;
+    }
+    .account-menu-toggle:hover,
+    .account-menu-toggle[aria-expanded="true"] {
+      border-color:rgba(15,122,59,.34);
+      color:var(--accent-dark);
+      transform:translateY(-1px);
+    }
+    .account-menu-panel {
+      position:absolute;
+      top:calc(100% + 10px);
+      right:0;
+      z-index:50;
+      min-width:178px;
+      display:grid;
+      gap:4px;
+      padding:8px;
+      border:1px solid #e4eadf;
+      border-radius:14px;
+      background:#ffffff;
+      box-shadow:0 16px 34px rgba(15,23,42,.14);
+    }
+    .account-menu-panel .nav-link {
+      display:flex;
+      align-items:center;
+      min-height:38px;
+      padding:9px 10px;
+      border-radius:10px;
+      color:var(--text);
+      font-size:13px;
+      font-weight:750;
+      text-decoration:none;
+    }
+    .account-menu-panel .nav-link:hover {
+      background:var(--soft);
+      color:var(--accent-dark);
+      text-decoration:none;
+    }
     .brand-title { display:flex; align-items:center; gap:12px; }
     .brand-mark { width:140px; height:64px; border-radius:18px; background:#ffffff; border:1px solid #ffffff; display:grid; place-items:center; flex:0 0 auto; overflow:hidden; }
     .brand-mark img { width:126px; height:auto; display:block; }
@@ -115,10 +174,10 @@
     }
 
     button.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-green));
-      color: #132018;
-      border-color: #ffb703;
-      box-shadow: 0 8px 20px rgba(255, 183, 3, 0.24);
+      background: #0f7a3b;
+      color: #ffffff;
+      border-color: #0f7a3b;
+      box-shadow: 0 10px 22px rgba(15, 122, 59, 0.14);
     }
 
     button:hover {
@@ -138,13 +197,13 @@
     tbody tr:hover { background:#f8fafc; }
     th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; background:#f9fafb; }
     .stats { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:14px; }
-    .stat { background:linear-gradient(180deg,#fff,#fffaf0); border:1px solid var(--line); border-radius:18px; padding:16px; }
+    .stat { background:#ffffff; border:1px solid var(--line); border-radius:18px; padding:16px; }
     .stat-label { color:var(--muted); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
     .value { font-size:28px; font-weight:800; margin-top:6px; letter-spacing:-.03em; }
     .value.balance { color:var(--warning); }
     .value.paid { color:var(--success); }
     .progress-shell { height:14px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:16px; }
-    .progress-bar { height:100%; width:0%; background:linear-gradient(90deg,#0f7a3b,#22c55e); border-radius:999px; transition:width .25s ease; }
+    .progress-bar { height:100%; width:0%; background:linear-gradient(90deg,#0f7a3b,#22c55e 78%,#ffcf48); border-radius:999px; transition:width .25s ease; }
     .summary-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
     .pill { background:#f3f4f6; border:1px solid var(--line); border-radius:999px; padding:8px 12px; font-size:13px; color:#374151; font-weight:600; }
     .payment-instructions {
@@ -155,7 +214,7 @@
     .instruction-item {
       border: 1px solid var(--line);
       border-radius: 16px;
-      background: var(--soft);
+      background: #ffffff;
       padding: 14px;
     }
     .instruction-label {
@@ -172,6 +231,13 @@
       font-weight: 800;
       overflow-wrap: anywhere;
     }
+    .copy-zelle-btn {
+      width: 100%;
+      margin-top: 12px;
+      min-height: 40px;
+      padding: 9px 12px;
+      border-radius: 10px;
+    }
     .badge { display:inline-flex; align-items:center; border-radius:999px; padding:5px 10px; font-size:12px; font-weight:800; }
     .badge-borrowed { background:#fff3c4; color:#b45309; }
     .badge-payment { background:#dcfce7; color:#166534; }
@@ -179,16 +245,16 @@
     .amount-payment { color:#166534; font-weight:800; }
     .section-title { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
     @media (min-width: 1025px) {
-      body { background: #f6f8f4; }
+      body { background: #fbfdf8; }
       .wrap { max-width: 1280px; padding: 28px 28px 44px; }
-      .card { border-color: #e4eadf; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.045); }
-      .card.hero { color: var(--text); background: #ffffff; border: 1px solid #e4eadf; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055); padding: 20px 22px; }
+      .card { border-radius: 14px; box-shadow: 0 8px 22px rgba(15, 83, 45, 0.05); }
+      .card.hero { padding: 20px 22px; }
       .hero .muted, .hero-description { color: #647064; }
       .brand-mark { width:118px; height:52px; border-radius:12px; border-color:#e4eadf; }
       .brand-mark img { width:106px; }
       h1 { font-size:28px; letter-spacing:0; }
       button, input { border-color:#dfe7dc; border-radius:10px; }
-      button.primary { background:#132018; color:#ffffff; border-color:#132018; box-shadow:none; }
+      button.primary { background:#0f7a3b; color:#ffffff; border-color:#0f7a3b; box-shadow:0 10px 22px rgba(15, 122, 59, 0.14); }
       button:hover { transform:none; box-shadow:0 4px 14px rgba(15, 23, 42, 0.08); }
       .stat { background:#ffffff; border-color:#e4eadf; border-radius:12px; }
       .table-wrap { padding:0; }
@@ -199,13 +265,12 @@
 
     @media (max-width: 900px) and (orientation: landscape) {
       .hero-main > div:first-child { width:100%; flex:0 0 100%; }
-      .hero .top-actions { width:100%; justify-content:flex-start; align-items:center; flex-wrap:nowrap; gap:14px; overflow-x:auto; }
+      .hero .top-actions { width:100%; justify-content:flex-start; align-items:center; flex-wrap:nowrap; gap:14px; overflow:visible; }
       .actions { width:100%; }
       .actions > * { flex:1 1 calc(50% - 8px); }
       .hero .top-actions > * { flex:0 0 auto; }
-      #signedInActions { width:auto; flex:0 0 auto; gap:14px !important; flex-wrap:nowrap; }
+      #signedInActions { width:auto; flex:0 0 auto; gap:8px !important; flex-wrap:nowrap; }
       #signedInActions > * { flex:0 0 auto !important; }
-      #signedInActions .nav-separator { display:inline; }
     }
     @media (max-width: 640px) {
       .wrap { padding:14px; padding-bottom:28px; }
@@ -218,11 +283,14 @@
       }
       .value { font-size:24px; }
       .top-actions { width:100%; justify-content:flex-start; }
-      .hero .top-actions { align-items:center; gap:14px; flex-wrap:nowrap; overflow-x:auto; }
+      .hero .top-actions { align-items:center; gap:14px; flex-wrap:nowrap; overflow:visible; }
       .hero .top-actions .nav-link { flex:0 0 auto; line-height:1.3; }
-      #signedInActions { width:auto; flex:0 0 auto; gap:14px !important; flex-wrap:nowrap; }
+      .account-menu-panel {
+        left: 0;
+        right: auto;
+      }
+      #signedInActions { width:auto; flex:0 0 auto; gap:8px !important; flex-wrap:nowrap; }
       #signedInActions > * { flex:0 0 auto !important; }
-      #signedInActions .nav-separator { display:inline; }
       .actions { width:100%; }
       .actions > * { flex:1 1 calc(50% - 8px); }
       .hero .top-actions > * { flex:0 0 auto; }
@@ -244,145 +312,6 @@
       .table-wrap td[data-label="Balance After"] { order:5; }
       .table-wrap td[data-label="Notes"] { order:6; }
       .table-wrap td.mobile-empty { display:none; }
-    }
-    a.nav-link { color:var(--accent-dark); font-size:14px; font-weight:700; text-decoration:none; }
-    a.nav-link:hover { text-decoration:underline; }
-
-
-    /* Bright Mango Loan polish */
-    body { background: linear-gradient(180deg, #ffffff 0%, #fbfef8 48%, #f7fcf3 100%); }
-    .card {
-      border-color: #e5f0df;
-      box-shadow: 0 10px 28px rgba(15, 83, 45, 0.055);
-    }
-    .card.hero,
-    .hero {
-      color: var(--text);
-      background:
-        linear-gradient(#ffffff, #ffffff) padding-box,
-        linear-gradient(100deg, rgba(255, 183, 3, 0.55), rgba(34, 197, 94, 0.46)) border-box;
-      border: 1px solid transparent;
-      box-shadow: 0 12px 30px rgba(15, 83, 45, 0.07);
-    }
-    .hero .muted,
-    .hero-description,
-    .lead {
-      color: #5f6f63;
-    }
-    h1 {
-      letter-spacing: 0;
-    }
-    h2,
-    h3,
-    .section-title {
-      letter-spacing: 0;
-    }
-    button,
-    .file-label,
-    a.cta {
-      border-color: #dfeadb;
-      font-weight: 800;
-    }
-    button.primary,
-    a.cta.primary {
-      background: #0f7a3b;
-      color: #ffffff;
-      border-color: #0f7a3b;
-      box-shadow: 0 10px 22px rgba(15, 122, 59, 0.14);
-    }
-    button.primary:hover,
-    a.cta.primary:hover {
-      box-shadow: 0 12px 26px rgba(15, 122, 59, 0.18);
-    }
-    input,
-    select,
-    textarea {
-      border-color: #dfeadb;
-      background: #ffffff;
-    }
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: rgba(15, 122, 59, 0.45);
-      outline-color: rgba(34, 197, 94, 0.16);
-    }
-    @media (min-width: 1025px) {
-      body {
-        background: #fbfdf8;
-      }
-      .card,
-      .card.hero,
-      .hero {
-        border-radius: 14px;
-        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.05);
-      }
-      h1 {
-        font-size: 32px;
-      }
-      .section {
-        margin-top: 30px;
-      }
-    }
-    @media (max-width: 640px) {
-      .card,
-      .card.hero,
-      .hero {
-        border-radius: 18px;
-        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.06);
-      }
-      h1 {
-        font-size: 28px;
-      }
-      button,
-      .file-label,
-      a.cta {
-        min-height: 48px;
-      }
-    }
-
-    .stat,
-    .instruction-item,
-    .pill {
-      background: #ffffff;
-    }
-    .progress-bar {
-      background: linear-gradient(90deg, #0f7a3b, #22c55e 78%, #ffcf48);
-    }
-    .hero .top-actions {
-      gap: 8px;
-      align-items: center;
-    }
-    .hero .top-actions .nav-separator {
-      display: none;
-    }
-    .hero .top-actions .nav-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 38px;
-      padding: 8px 12px;
-      border: 1px solid #dfeadb;
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--accent-dark);
-      box-shadow: 0 6px 16px rgba(15, 83, 45, 0.08);
-      line-height: 1;
-      text-decoration: none;
-    }
-    .hero .top-actions .nav-link:hover {
-      color: var(--accent-dark);
-      border-color: rgba(15, 122, 59, 0.34);
-      text-decoration: none;
-      transform: translateY(-1px);
-    }
-    @media (max-width: 640px) {
-      .hero .top-actions {
-        width: 100%;
-        justify-content: flex-start;
-      }
-      .hero .top-actions .nav-link {
-        font-size: 13px;
-      }
       #authCard,
       #forgotPasswordCard,
       #passwordResetCard,
@@ -397,6 +326,8 @@
         margin: -16px -16px 16px;
       }
     }
+    a.nav-link { color:var(--accent-dark); font-size:14px; font-weight:700; text-decoration:none; }
+    a.nav-link:hover { text-decoration:underline; }
 
   </style>
 </head>
@@ -409,9 +340,13 @@
         </div>
         <div class="actions top-actions">
           <span id="signedInActions" class="actions hidden" style="gap:14px;">
-            <a id="showChangePasswordBtn" href="#" class="nav-link">Change password</a>
-            <span class="nav-separator" aria-hidden="true">|</span>
-            <a id="signOutBtn" href="#" class="nav-link">Sign out</a>
+            <span class="account-menu">
+              <button type="button" id="accountMenuBtn" class="account-menu-toggle" aria-haspopup="true" aria-expanded="false">Account</button>
+              <span id="accountMenuPanel" class="account-menu-panel hidden">
+                <a id="showChangePasswordBtn" href="#" class="nav-link">Change password</a>
+                <a id="signOutBtn" href="#" class="nav-link">Sign out</a>
+              </span>
+            </span>
           </span>
         </div>
       </div>
@@ -508,7 +443,8 @@
           </div>
           <div class="instruction-item">
             <div class="instruction-label">Zelle</div>
-            <div class="instruction-value">415-519-3499</div>
+            <div id="zellePaymentValue" class="instruction-value">415-519-3499</div>
+            <button id="copyZelleBtn" type="button" class="secondary copy-zelle-btn">Copy Zelle</button>
           </div>
         </div>
       </div>
@@ -1033,19 +969,56 @@
       setSessionMessage("");
     }
 
+    function closeAccountMenu() {
+      const btn = document.getElementById("accountMenuBtn");
+      const panel = document.getElementById("accountMenuPanel");
+      if (!btn || !panel) return;
+      btn.setAttribute("aria-expanded", "false");
+      panel.classList.add("hidden");
+    }
+
+    async function copyZelleInfo() {
+      const button = document.getElementById("copyZelleBtn");
+      const text = document.getElementById("zellePaymentValue").textContent.trim();
+      const originalText = button.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = "Copied";
+      } catch (e) {
+        button.textContent = "Copy failed";
+      }
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 1400);
+    }
+
     document.getElementById("signInBtn").addEventListener("click", signIn);
     document.getElementById("resetBtn").addEventListener("click", showForgotPasswordCard);
     document.getElementById("sendResetEmailBtn").addEventListener("click", resetPassword);
     document.getElementById("cancelForgotPasswordBtn").addEventListener("click", hideForgotPasswordCard);
     document.getElementById("savePasswordBtn").addEventListener("click", saveNewPassword);
+    document.getElementById("accountMenuBtn").addEventListener("click", (event) => {
+      event.preventDefault();
+      const btn = document.getElementById("accountMenuBtn");
+      const panel = document.getElementById("accountMenuPanel");
+      const open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      panel.classList.toggle("hidden", open);
+    });
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".account-menu")) closeAccountMenu();
+    });
+    document.getElementById("copyZelleBtn").addEventListener("click", copyZelleInfo);
     document.getElementById("showChangePasswordBtn").addEventListener("click", (event) => {
       event.preventDefault();
+      closeAccountMenu();
       showChangePasswordCard();
     });
     document.getElementById("changePasswordBtn").addEventListener("click", changeBorrowerPassword);
     document.getElementById("cancelChangePasswordBtn").addEventListener("click", hideChangePasswordCard);
     document.getElementById("signOutBtn").addEventListener("click", (event) => {
       event.preventDefault();
+      closeAccountMenu();
       signOut();
     });
 

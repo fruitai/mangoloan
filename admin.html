@@ -53,8 +53,10 @@
 
     .card.hero {
       color: var(--text);
-      background: #ffffff;
-      border: 1px solid #e5f0df;
+      background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(100deg, rgba(255, 183, 3, 0.55), rgba(34, 197, 94, 0.46)) border-box;
+      border: 1px solid transparent;
       box-shadow: 0 12px 30px rgba(15, 83, 45, 0.07);
     }
 
@@ -158,10 +160,10 @@
     }
 
     button.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-green));
-      color: #132018;
-      border-color: #ffb703;
-      box-shadow: 0 8px 20px rgba(255, 183, 3, 0.24);
+      background: #0f7a3b;
+      color: #ffffff;
+      border-color: #0f7a3b;
+      box-shadow: 0 10px 22px rgba(15, 122, 59, 0.14);
     }
 
     .wide-add-button {
@@ -374,10 +376,10 @@
 
     .card {
       background: var(--card);
-      border: 1px solid var(--line);
+      border: 1px solid #e5f0df;
       border-radius: 22px;
       padding: 18px;
-      box-shadow: 0 10px 28px rgba(180, 83, 9, 0.08);
+      box-shadow: 0 10px 28px rgba(15, 83, 45, 0.055);
     }
 
     .stat-label {
@@ -429,7 +431,7 @@
 
     input, select, textarea {
       width: 100%;
-      border: 1px solid var(--line);
+      border: 1px solid #dfeadb;
       border-radius: 14px;
       padding: 12px 14px;
       min-height: 46px;
@@ -444,7 +446,7 @@
     select:focus,
     textarea:focus {
       outline: 3px solid rgba(34,197,94,.20);
-      border-color: var(--accent);
+      border-color: rgba(15, 122, 59, 0.45);
     }
 
     textarea { min-height: 108px; resize: vertical; }
@@ -509,7 +511,7 @@
     }
 
     .badge-paid { background: var(--ok-bg); color: var(--ok); }
-    .badge-active { background: var(--soft); color: var(--text); }
+    .badge-active { background: #f0fdf4; color: #0f7a3b; border: 1px solid rgba(34, 197, 94, 0.22); }
     .badge-overdue { background: var(--danger-bg); color: var(--danger); }
 
     .borrower-grid {
@@ -634,6 +636,60 @@
 
     .zelle-preview strong { color: #0f7a3b; }
 
+    .stats .card,
+    .stat,
+    .meta-list li,
+    .instruction-item {
+      background: #ffffff;
+    }
+
+    .tab-btn.active,
+    .receipt-mode button.active {
+      background: #f0fdf4;
+      color: #0f7a3b;
+      border-color: rgba(34, 197, 94, 0.22);
+    }
+
+    .zelle-preview,
+    .payment-history-row {
+      background: #fffdf3;
+    }
+
+    .hero .top-actions {
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hero .top-actions .nav-separator {
+      display: none;
+    }
+
+    .hero .top-actions > .nav-link,
+    .hero .more-menu-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #dfeadb;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--accent-dark);
+      box-shadow: 0 6px 16px rgba(15, 83, 45, 0.08);
+      line-height: 1;
+      text-decoration: none;
+    }
+
+    .hero .top-actions > .nav-link:hover,
+    .hero .top-actions > .nav-link.active,
+    .hero .more-menu-toggle:hover,
+    .hero .more-menu-toggle[aria-expanded="true"] {
+      color: var(--accent-dark);
+      border-color: rgba(15, 122, 59, 0.34);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
     .zelle-warning {
       border-color: #fca5a5;
       background: #fff1f2;
@@ -679,7 +735,7 @@
 
     @media (min-width: 1025px) {
       body {
-        background: #f6f8f4;
+        background: #fbfdf8;
       }
 
       .container {
@@ -688,16 +744,12 @@
       }
 
       .card {
-        border-color: #e4eadf;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.045);
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.05);
       }
 
       .card.hero {
-        color: var(--text);
-        background: #ffffff;
-        border: 1px solid #e4eadf;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.055);
+        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.05);
         padding: 20px 22px;
       }
 
@@ -810,10 +862,10 @@
       }
 
       button.primary {
-        background: #132018;
+        background: #0f7a3b;
         color: #ffffff;
-        border-color: #132018;
-        box-shadow: none;
+        border-color: #0f7a3b;
+        box-shadow: 0 10px 22px rgba(15, 122, 59, 0.14);
       }
 
       button:hover,
@@ -951,7 +1003,7 @@
         gap: 10px 16px;
       }
       .hero .top-actions .nav-separator {
-        display: inline;
+        display: none;
       }
       .hero .top-actions .nav-link,
       .hero .more-menu-toggle {
@@ -1086,6 +1138,8 @@
       }
       .table-wrap td[data-label="Borrower"],
       .table-wrap td[data-label="Balance"],
+      .table-wrap td[data-label="Amount"],
+      .table-wrap td[data-label="Method"],
       .table-wrap td[data-label="Status"] {
         padding-top: 0;
       }
@@ -1115,7 +1169,26 @@
         margin-bottom: 3px;
         font-size: 10px;
       }
+      .table-wrap td[data-label="Amount"] {
+        order: 2;
+        grid-column: 2;
+        display: block;
+        min-width: 92px;
+        text-align: right;
+        color: #0f7a3b;
+      }
+      .table-wrap td[data-label="Amount"]::before {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 10px;
+      }
       .table-wrap td[data-label="Status"] {
+        order: 3;
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: flex-start;
+      }
+      .table-wrap td[data-label="Method"] {
         order: 3;
         grid-column: 1 / -1;
         display: flex;
@@ -1124,10 +1197,17 @@
       .table-wrap td[data-label="Status"]::before {
         content: none;
       }
+      .table-wrap td[data-label="Method"]::before {
+        content: none;
+      }
       .table-wrap td[data-label="Principal"] { order: 4; grid-column: 1 / -1; }
       .table-wrap td[data-label="Paid"] { order: 5; grid-column: 1 / -1; }
       .table-wrap td[data-label="Monthly"] { order: 6; grid-column: 1 / -1; }
       .table-wrap td[data-label="Due"] { order: 7; grid-column: 1 / -1; }
+      .table-wrap td[data-label="Loan"] { order: 4; grid-column: 1 / -1; }
+      .table-wrap td[data-label="Running Balance"] { order: 5; grid-column: 1 / -1; }
+      .table-wrap td[data-label="Date"] { order: 6; grid-column: 1 / -1; }
+      .table-wrap td[data-label="Notes"] { order: 7; grid-column: 1 / -1; }
       .table-wrap td[data-label="Actions"] { order: 8; grid-column: 1 / -1; }
     }
 
@@ -1158,84 +1238,8 @@
       }
     }
 
-
-    /* Bright Mango Loan polish */
-    body { background: linear-gradient(180deg, #ffffff 0%, #fbfef8 48%, #f7fcf3 100%); }
-    .card {
-      border-color: #e5f0df;
-      box-shadow: 0 10px 28px rgba(15, 83, 45, 0.055);
-    }
-    .card.hero,
-    .hero {
-      color: var(--text);
-      background:
-        linear-gradient(#ffffff, #ffffff) padding-box,
-        linear-gradient(100deg, rgba(255, 183, 3, 0.55), rgba(34, 197, 94, 0.46)) border-box;
-      border: 1px solid transparent;
-      box-shadow: 0 12px 30px rgba(15, 83, 45, 0.07);
-    }
-    .hero .muted,
-    .hero-description,
-    .lead {
-      color: #5f6f63;
-    }
-    h1 {
-      letter-spacing: 0;
-    }
-    h2,
-    h3,
-    .section-title {
-      letter-spacing: 0;
-    }
-    button,
-    .file-label,
-    a.cta {
-      border-color: #dfeadb;
-      font-weight: 800;
-    }
-    button.primary,
-    a.cta.primary {
-      background: #0f7a3b;
-      color: #ffffff;
-      border-color: #0f7a3b;
-      box-shadow: 0 10px 22px rgba(15, 122, 59, 0.14);
-    }
-    button.primary:hover,
-    a.cta.primary:hover {
-      box-shadow: 0 12px 26px rgba(15, 122, 59, 0.18);
-    }
-    input,
-    select,
-    textarea {
-      border-color: #dfeadb;
-      background: #ffffff;
-    }
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: rgba(15, 122, 59, 0.45);
-      outline-color: rgba(34, 197, 94, 0.16);
-    }
-    @media (min-width: 1025px) {
-      body {
-        background: #fbfdf8;
-      }
-      .card,
-      .card.hero,
-      .hero {
-        border-radius: 14px;
-        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.05);
-      }
-      h1 {
-        font-size: 32px;
-      }
-      .section {
-        margin-top: 30px;
-      }
-    }
     @media (max-width: 640px) {
       .card,
-      .card.hero,
       .hero {
         border-radius: 18px;
         box-shadow: 0 8px 22px rgba(15, 83, 45, 0.06);
@@ -1247,67 +1251,6 @@
       .file-label,
       a.cta {
         min-height: 48px;
-      }
-    }
-
-    .stats .card,
-    .stat,
-    .meta-list li,
-    .instruction-item {
-      background: #ffffff;
-    }
-    .tab-btn.active,
-    .receipt-mode button.active,
-    .badge-active {
-      background: #f0fdf4;
-      color: #0f7a3b;
-      border-color: rgba(34, 197, 94, 0.22);
-    }
-    .zelle-preview,
-    .payment-history-row {
-      background: #fffdf3;
-    }
-    .hero .top-actions {
-      gap: 8px;
-      align-items: center;
-    }
-    .hero .top-actions .nav-separator {
-      display: none;
-    }
-    .hero .top-actions > .nav-link,
-    .hero .more-menu-toggle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 38px;
-      padding: 8px 12px;
-      border: 1px solid #dfeadb;
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--accent-dark);
-      box-shadow: 0 6px 16px rgba(15, 83, 45, 0.08);
-      line-height: 1;
-      text-decoration: none;
-    }
-    .hero .top-actions > .nav-link:hover,
-    .hero .top-actions > .nav-link.active,
-    .hero .more-menu-toggle:hover,
-    .hero .more-menu-toggle[aria-expanded="true"] {
-      color: var(--accent-dark);
-      border-color: rgba(15, 122, 59, 0.34);
-      text-decoration: none;
-      transform: translateY(-1px);
-    }
-    @media (min-width: 1025px) {
-      .hero .top-actions {
-        background: #fbfef8;
-      }
-      .hero .top-actions > .nav-link:hover,
-      .hero .top-actions > .nav-link.active,
-      .hero .more-menu-toggle:hover,
-      .hero .more-menu-toggle[aria-expanded="true"] {
-        background: #ffffff;
-        color: #0f7a3b;
       }
     }
 
@@ -2929,8 +2872,8 @@
             <td data-label="Date">${escapeHtml(p.date || "")}</td>
             <td data-label="Borrower">${escapeHtml(p.borrower?.name || "Unknown")}</td>
             <td data-label="Loan">${loanLabel}</td>
-            <td data-label="Method">${escapeHtml(p.method || "")}</td>
-            <td data-label="Amount">${currency(p.amount)}</td>
+            <td data-label="Method"><span class="badge badge-active">${escapeHtml(p.method || "Payment")}</span></td>
+            <td data-label="Amount"><strong>${currency(p.amount)}</strong></td>
             <td data-label="Running Balance">${currency(runningBalanceMap[p.id] || 0)}</td>
             <td data-label="Notes">
               ${escapeHtml(p.notes || "-")}
