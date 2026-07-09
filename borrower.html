@@ -332,6 +332,42 @@
     .progress-bar {
       background: linear-gradient(90deg, #0f7a3b, #22c55e 78%, #ffcf48);
     }
+    .hero .top-actions {
+      gap: 8px;
+      align-items: center;
+    }
+    .hero .top-actions .nav-separator {
+      display: none;
+    }
+    .hero .top-actions .nav-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #dfeadb;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--accent-dark);
+      box-shadow: 0 6px 16px rgba(15, 83, 45, 0.08);
+      line-height: 1;
+      text-decoration: none;
+    }
+    .hero .top-actions .nav-link:hover {
+      color: var(--accent-dark);
+      border-color: rgba(15, 122, 59, 0.34);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    @media (max-width: 640px) {
+      .hero .top-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .hero .top-actions .nav-link {
+        font-size: 13px;
+      }
+    }
 
   </style>
 </head>
@@ -436,7 +472,7 @@
         <div class="section-title">
           <div>
             <h3>Payment Instructions</h3>
-            <p class="muted small" style="margin:0;">Send payments by Zelle, then contact Lawrence so your payment can be recorded.</p>
+            <p class="muted small" style="margin:0;">Send payments by Zelle. Recorded payments will appear in your loan activity.</p>
           </div>
         </div>
         <div class="payment-instructions">

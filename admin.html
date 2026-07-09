@@ -1239,6 +1239,37 @@
     .payment-history-row {
       background: #fffdf3;
     }
+    .hero .top-actions {
+      gap: 8px;
+      align-items: center;
+    }
+    .hero .top-actions .nav-separator {
+      display: none;
+    }
+    .hero .top-actions > .nav-link,
+    .hero .more-menu-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #dfeadb;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--accent-dark);
+      box-shadow: 0 6px 16px rgba(15, 83, 45, 0.08);
+      line-height: 1;
+      text-decoration: none;
+    }
+    .hero .top-actions > .nav-link:hover,
+    .hero .top-actions > .nav-link.active,
+    .hero .more-menu-toggle:hover,
+    .hero .more-menu-toggle[aria-expanded="true"] {
+      color: var(--accent-dark);
+      border-color: rgba(15, 122, 59, 0.34);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
     @media (min-width: 1025px) {
       .hero .top-actions {
         background: #fbfef8;
