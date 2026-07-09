@@ -568,28 +568,46 @@
       font-size: 20px;
     }
 
-    .icon-action {
-      flex: 0 0 40px;
-      width: 40px;
-      min-width: 40px;
-      height: 40px;
-      min-height: 40px;
-      padding: 0;
-      border: 1.5px solid #111827;
-      border-radius: 50%;
-      background: transparent;
-      color: #111827;
-      box-shadow: none;
-      font-size: 22px;
-      font-weight: 700;
-      line-height: 1;
-      aspect-ratio: 1 / 1;
+    .borrower-detail-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .icon-action:hover {
-      transform: none;
+    .borrower-detail-actions .detail-action {
+      min-height: 38px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1;
       box-shadow: none;
-      background: #f8fafc;
+    }
+
+    .borrower-detail-actions .detail-action.primary {
+      border-color: #0f7a3b;
+      background: #0f7a3b;
+      color: #ffffff;
+    }
+
+    .borrower-detail-actions .detail-action.secondary {
+      border-color: #dfeadb;
+      background: #ffffff;
+      color: var(--accent-dark);
+    }
+
+    .borrower-detail-actions .detail-action.close {
+      border-color: transparent;
+      background: transparent;
+      color: #647067;
+      padding-inline: 8px;
+    }
+
+    .borrower-detail-actions .detail-action:hover {
+      transform: none;
+      box-shadow: 0 6px 14px rgba(15, 83, 45, 0.08);
     }
 
     .payment-history-list {
@@ -1095,13 +1113,18 @@
         justify-content: flex-start;
       }
       .row-actions button { min-height: 38px; padding: 9px 11px; }
-      .row-actions .icon-action {
-        flex: 0 0 40px;
-        width: 40px;
-        min-width: 40px;
-        height: 40px;
-        min-height: 40px;
-        padding: 0;
+      .borrower-detail-header {
+        align-items: stretch;
+      }
+      .borrower-detail-actions {
+        width: 100%;
+        justify-content: stretch;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      }
+      .borrower-detail-actions .detail-action {
+        width: 100%;
+        padding-inline: 10px;
       }
       .table-wrap td[data-label="Borrower"],
       .table-wrap td[data-label="Balance"],
@@ -2658,10 +2681,10 @@
             <h3 class="borrower-detail-title">${escapeHtml(borrower.name || "Borrower")}</h3>
             <div class="muted small">${currency(totalPaid)} paid · ${currency(totalAdvanced)} extra advanced</div>
           </div>
-          <div class="row-actions">
-            <button type="button" class="icon-action" aria-label="Add payment" title="Add payment" onclick="addPaymentForBorrower('${borrower.id}')">+</button>
-            <button type="button" onclick="addAdvanceForBorrower('${borrower.id}')">Advance</button>
-            <button type="button" class="icon-action" aria-label="Close payment history" title="Close payment history" onclick="closeBorrowerPaymentDetail()">&times;</button>
+          <div class="borrower-detail-actions">
+            <button type="button" class="detail-action primary" onclick="addPaymentForBorrower('${borrower.id}')">Add payment</button>
+            <button type="button" class="detail-action secondary" onclick="addAdvanceForBorrower('${borrower.id}')">Add advance</button>
+            <button type="button" class="detail-action close" aria-label="Close payment history" title="Close payment history" onclick="closeBorrowerPaymentDetail()">Close</button>
           </div>
         </div>
         ${
