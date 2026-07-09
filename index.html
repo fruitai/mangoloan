@@ -69,7 +69,11 @@
       position: relative;
     }
 
-    .brand-row { display:flex; align-items:center; gap:14px; margin-bottom:22px; position:relative; z-index:1; }
+    .brand-row { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:22px; position:relative; z-index:1; flex-wrap:wrap; }
+    .brand-lockup { display:flex; align-items:center; gap:14px; }
+    .page-nav { display:flex; gap:10px; flex-wrap:wrap; }
+    .page-nav a { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:9px 13px; border:1px solid var(--line); border-radius:999px; background:#ffffff; color:var(--text); font-size:13px; font-weight:800; text-decoration:none; box-shadow:0 4px 14px rgba(15, 83, 45, .05); }
+    .page-nav a:hover { color:var(--accent-dark); border-color:rgba(15, 122, 59, .24); }
     .logo-mark {
       width: 174px;
       height: 80px;
@@ -82,6 +86,7 @@
       overflow:hidden;
     }
     .logo-mark img { width: 158px; height: auto; display:block; }
+    a.logo-mark { text-decoration:none; color:inherit; }
     .eyebrow { font-size:12px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; opacity:.82; }
     h1 { margin: 0; font-size: clamp(34px, 7vw, 58px); line-height: 1; letter-spacing: -0.05em; position:relative; z-index:1; }
     .lead { margin: 16px 0 0; font-size: 17px; line-height: 1.55; max-width: 620px; color: rgba(255,255,255,.88); position:relative; z-index:1; }
@@ -136,6 +141,7 @@
 
     @media (max-width: 720px) {
       .container { padding-top: 18px; }
+      .page-nav { width:100%; display:grid; grid-template-columns:1fr; }
       .hero-actions { display:grid; grid-template-columns:1fr; }
       .access-actions,
       .cards,
@@ -265,11 +271,17 @@
   <div class="container">
     <section class="hero">
       <div class="brand-row">
-        <div class="logo-mark" aria-hidden="true"><img src="assets/mango-loan-logo.jpg" alt="" /></div>
-        <div>
-          <div class="eyebrow">Next HB loan tracking</div>
-          <div style="font-weight:700; opacity:.9;">Mango Loan</div>
+        <div class="brand-lockup">
+          <a class="logo-mark" href="index.html" aria-label="Mango Loan home"><img src="assets/mango-loan-logo.jpg" alt="" /></a>
+          <div>
+            <div class="eyebrow">Next HB loan tracking</div>
+            <div style="font-weight:700; opacity:.9;">Mango Loan</div>
+          </div>
         </div>
+        <nav class="page-nav" aria-label="Mango Loan pages">
+          <a href="borrower.html">Borrower portal</a>
+          <a href="admin.html">Admin dashboard</a>
+        </nav>
       </div>
       <h1>Private loan tracking made simple</h1>
       <p class="lead">Track borrowers, payments, balances, receipts, and reminders in one secure place.</p>
