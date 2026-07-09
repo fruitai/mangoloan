@@ -88,9 +88,18 @@
 
     .section { margin-top: 18px; }
     .section-title { margin: 0 0 12px; font-size: 22px; letter-spacing: -.03em; }
+    .hero-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:24px; position:relative; z-index:1; }
     .access-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .access-card { min-height: 154px; display: flex; flex-direction: column; justify-content: space-between; }
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .feature-grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:16px; }
+    .feature-card { min-height:132px; }
+    .feature-card h2 { font-size:18px; }
+    .feature-card p { margin-bottom:0; }
+    .trust-card { display:grid; gap:12px; }
+    .trust-list { display:grid; gap:10px; margin:0; padding:0; list-style:none; }
+    .trust-list li { padding:12px 14px; border:1px solid var(--line); border-radius:14px; background:var(--soft); color:var(--muted); font-size:14px; line-height:1.45; }
+    .trust-list strong { color:var(--text); }
     .card { background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 22px; padding: 22px; box-shadow: 0 10px 28px rgba(180, 83, 9, 0.08); }
     .card h2 { margin: 0 0 8px; font-size: 20px; letter-spacing:-.02em; }
     .card p { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: var(--muted); }
@@ -127,10 +136,129 @@
 
     @media (max-width: 720px) {
       .container { padding-top: 18px; }
+      .hero-actions { display:grid; grid-template-columns:1fr; }
       .access-actions,
-      .cards { grid-template-columns: 1fr; }
+      .cards,
+      .feature-grid { grid-template-columns: 1fr; }
       .hero { border-radius: 22px; }
     }
+
+
+    /* Bright Mango Loan polish */
+    body {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(255, 183, 3, 0.12), transparent 22rem),
+        radial-gradient(circle at 88% 8%, rgba(34, 197, 94, 0.10), transparent 24rem),
+        linear-gradient(180deg, #ffffff 0%, #fbfef8 48%, #f7fcf3 100%);
+    }
+    .card {
+      border-color: #e5f0df;
+      box-shadow: 0 10px 28px rgba(15, 83, 45, 0.055);
+    }
+    .card.hero,
+    .hero {
+      color: var(--text);
+      background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(100deg, rgba(255, 183, 3, 0.55), rgba(34, 197, 94, 0.46)) border-box;
+      border: 1px solid transparent;
+      box-shadow: 0 12px 30px rgba(15, 83, 45, 0.07);
+    }
+    .hero .muted,
+    .hero-description,
+    .lead {
+      color: #5f6f63;
+    }
+    h1 {
+      letter-spacing: 0;
+    }
+    h2,
+    h3,
+    .section-title {
+      letter-spacing: 0;
+    }
+    button,
+    .file-label,
+    a.cta {
+      border-color: #dfeadb;
+      font-weight: 800;
+    }
+    button.primary,
+    a.cta.primary {
+      background: #0f7a3b;
+      color: #ffffff;
+      border-color: #0f7a3b;
+      box-shadow: 0 10px 22px rgba(15, 122, 59, 0.14);
+    }
+    button.primary:hover,
+    a.cta.primary:hover {
+      box-shadow: 0 12px 26px rgba(15, 122, 59, 0.18);
+    }
+    input,
+    select,
+    textarea {
+      border-color: #dfeadb;
+      background: #ffffff;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(15, 122, 59, 0.45);
+      outline-color: rgba(34, 197, 94, 0.16);
+    }
+    @media (min-width: 1025px) {
+      body {
+        background: #fbfdf8;
+      }
+      .card,
+      .card.hero,
+      .hero {
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.05);
+      }
+      h1 {
+        font-size: 32px;
+      }
+      .section {
+        margin-top: 30px;
+      }
+    }
+    @media (max-width: 640px) {
+      .card,
+      .card.hero,
+      .hero {
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(15, 83, 45, 0.06);
+      }
+      h1 {
+        font-size: 28px;
+      }
+      button,
+      .file-label,
+      a.cta {
+        min-height: 48px;
+      }
+    }
+
+    .section {
+      margin-top: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(38px, 6vw, 56px);
+      line-height: 1.04;
+    }
+    .section-title {
+      font-size: 26px;
+    }
+    .compliance-card,
+    .feature-card,
+    .trust-card {
+      background: #ffffff;
+    }
+    .feature-grid {
+      gap: 18px;
+    }
+
   </style>
 </head>
 <body>
@@ -143,60 +271,52 @@
           <div style="font-weight:700; opacity:.9;">Mango Loan</div>
         </div>
       </div>
-      <h1>Loan Tracker</h1>
-      <p class="lead">Next HB uses Mango Loan to track private loan records, payments, receipts, reminders, and account follow-up.</p>
-    </section>
-
-    <section class="section">
-      <h2 class="section-title">Account Access</h2>
-      <div class="access-actions">
-        <div class="card access-card">
-          <div>
-            <h2>Borrower portal</h2>
-            <p>Borrowers can sign in to view borrowed amounts, payments, due date, and balance.</p>
-          </div>
-          <a class="cta primary" href="borrower.html">Open borrower portal</a>
-        </div>
-
-        <div class="card access-card">
-          <div>
-            <h2>Admin dashboard</h2>
-            <p>Create borrowers, manage loans, record payments, and review balances.</p>
-          </div>
-          <a class="cta" href="admin.html">Open admin dashboard</a>
-        </div>
+      <h1>Private loan tracking made simple</h1>
+      <p class="lead">Track borrowers, payments, balances, receipts, and reminders in one secure place.</p>
+      <div class="hero-actions">
+        <a class="cta primary" href="borrower.html">Open borrower portal</a>
+        <a class="cta" href="admin.html">Open admin dashboard</a>
       </div>
     </section>
 
-    <section class="section public-info">
-      <h2 class="section-title">Mango Loan Information</h2>
-      <div class="card">
-        <h2>About Next HB</h2>
-        <p>Next HB uses Mango Loan as a private loan tracker. The site is used for loan recordkeeping, payment tracking, receipts, reminders, and account follow-up.</p>
-        <ul>
-          <li>Borrower loan balance tracking</li>
-          <li>Payment receipt confirmations</li>
-          <li>Payment reminder notifications</li>
-          <li>Account follow-up related to payments and balances</li>
-        </ul>
+    <section class="section">
+      <h2 class="section-title">Mango Loan Features</h2>
+      <div class="feature-grid">
+        <div class="card feature-card">
+          <h2>Borrower balance tracking</h2>
+          <p>Keep current balances easy to review for every borrower account.</p>
+        </div>
+        <div class="card feature-card">
+          <h2>Payment history</h2>
+          <p>Review payment dates, methods, notes, and running loan activity.</p>
+        </div>
+        <div class="card feature-card">
+          <h2>Receipt confirmations</h2>
+          <p>Create clear payment receipt messages when payments are recorded.</p>
+        </div>
+        <div class="card feature-card">
+          <h2>SMS payment reminders</h2>
+          <p>Send transactional payment reminders for borrowers with SMS consent.</p>
+        </div>
+        <div class="card feature-card">
+          <h2>Admin loan management</h2>
+          <p>Manage borrowers, loans, advances, payments, and portal access.</p>
+        </div>
+        <div class="card feature-card">
+          <h2>Private account access</h2>
+          <p>Separate admin and borrower portals keep account views focused.</p>
+        </div>
       </div>
     </section>
 
     <section class="section compliance-info">
-      <div class="card compliance-card">
-        <h2>Contact And SMS</h2>
-        <ul class="meta-list">
-          <li><strong>Business</strong>Next HB</li>
-          <li><strong>SMS Program</strong>Transactional borrower account messages through Mango Loan</li>
-          <li><strong>Phone Number</strong>+1 (833) 962-6701</li>
-          <li><strong>Website</strong>mangoloan.vercel.app</li>
+      <div class="card trust-card compliance-card">
+        <h2>Trust And SMS Compliance</h2>
+        <ul class="trust-list">
+          <li><strong>Transactional SMS only.</strong> Next HB / Mango Loan SMS messages are transactional only and are not used for marketing.</li>
+          <li><strong>Opt out anytime.</strong> Borrowers may reply STOP to opt out or HELP for help. Message and data rates may apply.</li>
+          <li><strong>Consent details.</strong> SMS consent and opt-out details are available on the <a href="sms-consent.html">Mango Loan SMS consent page</a>.</li>
         </ul>
-        <p class="footer-note">
-          SMS consent and opt-out details are available on the <a href="sms-consent.html">Mango Loan SMS consent page</a>.
-        </p>
-        <p class="footer-note">
-          Next HB / Mango Loan SMS messages are transactional only and are not used for marketing. Borrowers may reply STOP to opt out or HELP for help. Message and data rates may apply.
-        </p>
       </div>
     </section>
   </div>
