@@ -322,6 +322,28 @@
       text-decoration: none;
     }
 
+    .hero .top-actions > .sign-out-nav {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 1px solid rgba(15, 122, 59, 0.22);
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--accent-dark);
+      box-shadow: 0 6px 16px rgba(15, 83, 45, 0.10);
+      line-height: 1;
+      text-decoration: none;
+    }
+
+    .hero .top-actions > .sign-out-nav:hover {
+      color: var(--accent-dark);
+      border-color: rgba(15, 122, 59, 0.34);
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
     .danger-link {
       color: var(--danger);
       background: transparent;
@@ -1329,9 +1351,9 @@
             <div id="moreMenuPanel" class="more-menu-panel hidden">
               <a href="#" id="importDataLink" class="nav-link">Import Data</a>
               <a href="#" id="exportBtn" class="nav-link">Export Data</a>
-              <a href="#" id="signOutBtn" class="nav-link">Sign out</a>
             </div>
           </div>
+          <a href="#" id="signOutBtn" class="nav-link sign-out-nav">Sign out</a>
           <input id="importFile" type="file" accept="application/json" class="hidden" />
         </div>
       </div>
