@@ -69,10 +69,8 @@
       position: relative;
     }
 
-    .brand-row { display:flex; align-items:center; gap:14px; margin-bottom:22px; position:relative; z-index:1; flex-wrap:wrap; }
-    .brand-lockup { display:flex; align-items:center; gap:14px; }
-    .logo-mark { width: 104px; height: 58px; border-radius: 14px; object-fit: contain; background: #ffffff; border: 1px solid #eef4e9; box-shadow: 0 10px 24px rgba(15, 83, 45, 0.12); flex: 0 0 auto; }
-    .eyebrow { font-size:12px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; opacity:.82; }
+    .brand-row { display:flex; align-items:center; margin-bottom:24px; position:relative; z-index:1; }
+    .logo-mark { width: 168px; height: 86px; border-radius: 14px; object-fit: contain; background: #ffffff; border: 1px solid #eef4e9; box-shadow: 0 10px 24px rgba(15, 83, 45, 0.12); flex: 0 0 auto; }
     h1 { margin: 0; font-size: clamp(34px, 7vw, 58px); line-height: 1; letter-spacing: -0.05em; position:relative; z-index:1; }
     .lead { margin: 16px 0 0; font-size: 17px; line-height: 1.55; max-width: 620px; color: #5f6f63; position:relative; z-index:1; }
 
@@ -123,7 +121,7 @@
 
     @media (max-width: 720px) {
       .container { padding-top: 18px; }
-      .logo-mark { width: 90px; height: 50px; border-radius: 12px; }
+      .logo-mark { width: 148px; height: 76px; border-radius: 12px; }
       .hero-actions { display:grid; grid-template-columns:1fr; }
       .access-actions,
       .cards,
@@ -161,12 +159,7 @@
   <div class="container">
     <section class="hero">
       <div class="brand-row">
-        <div class="brand-lockup">
-          <img class="logo-mark" src="assets/mango-loan-logo.jpg" alt="Mango Loan logo">
-          <div>
-            <div class="eyebrow">By Next HB</div>
-          </div>
-        </div>
+        <img class="logo-mark" src="assets/mango-loan-logo.jpg" alt="Mango Loan logo">
       </div>
       <h1>Private loan tracking made simple</h1>
       <p class="lead">Track borrowers, payments, balances, receipts, and reminders in one secure place.</p>
