@@ -2348,12 +2348,12 @@
 
     function parseZelleText(text) {
       const clean = String(text || "").replace(/\s+/g, " ").trim();
-      const match = clean.match(/BofA:\s*(.+?)\s+sent you\s+\$([\d,]+(?:\.\d{1,2})?)\s+for\s+[“\"](.+?)[”\"]/i);
+      const match = clean.match(/BofA:\s*(.+?)\s+sent you\s+\$([\d,]+(?:\.\d{1,2})?)(?:\s+for\s+[“"](.+?)[”"])?(?:\.|\s|$)/i);
       if (!match) return null;
       return {
         payer: match[1].trim(),
         amount: Number(match[2].replace(/,/g, "")),
-        memo: match[3].trim()
+        memo: (match[3] || "").trim()
       };
     }
 
@@ -2363,7 +2363,7 @@
         date || todayStr(),
         normalizeText(parsed.payer).replace(/\s+/g, "-"),
         Number(parsed.amount || 0).toFixed(2),
-        normalizeText(parsed.memo).replace(/\s+/g, "-")
+        normalizeText(parsed.memo || "no memo").replace(/\s+/g, "-")
       ].join("|");
     }
 
@@ -2413,14 +2413,15 @@
       preview.classList.remove("hidden", "zelle-warning");
       if (!parsed || !parsed.amount) {
         preview.classList.add("zelle-warning");
-        preview.innerHTML = "Could not read that Zelle text. Paste a message like: <strong>BofA: John Smith sent you $500.00 for “loan”.</strong>";
+        preview.innerHTML = "Could not read that Zelle text. Paste a message like: <strong>BofA: John Smith sent you $500.00</strong>";
         return;
       }
 
       const date = document.getElementById("paymentDate").value || todayStr();
       const bestLoan = findBestLoanForZelle(parsed);
       const sourceId = zelleSourceId(parsed, date);
-      const notes = `Zelle from ${parsed.payer}. Memo: ${parsed.memo}. Source: ${sourceId}`;
+      const memoNote = parsed.memo ? ` Memo: ${parsed.memo}.` : "";
+      const notes = `Zelle from ${parsed.payer}.${memoNote} Source: ${sourceId}`;
 
       document.getElementById("paymentAmount").value = parsed.amount.toFixed(2);
       document.getElementById("paymentDate").value = date;
